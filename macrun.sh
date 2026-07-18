@@ -1,0 +1,1 @@
+open build/SimpleVocals_Artefacts/Release/Standalone/SimpleVocals.app

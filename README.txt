@@ -1,0 +1,105 @@
+SimpleVocals
+============
+A JUCE-based vocal channel-strip plugin (VST3 / Standalone) for macOS and
+Linux, built around a reorderable chain of eight processing modules.
+
+Butting in for just a second: from the publisher, This is made almost fully with AI: I don't know much about voice processing and right now I don't want to, so ... yeah. But I wanted to see what the AI could make.
+
+OVERVIEW
+--------
+SimpleVocals gives you a complete vocal processing chain in a single
+plugin: EQ, Autotune, De-Esser, Compressor, Saturation, Harmonizer,
+Reverb, and Delay. Every module can be individually enabled/disabled,
+and the order of the chain can be freely rearranged to suit your signal
+flow. A built-in preset browser ships with 50 factory presets covering
+everything from clean broadcast voice to heavy creative effects.
+
+
+MODULES
+-------
+1. EQ
+   Up to 8 fully parametric bands, each with its own frequency, gain,
+   Q, and an optional "dynamic" (compressing) mode with its own
+   threshold and ratio.
+
+2. Autotune
+   Real-time pitch correction with adjustable speed, amount, mix,
+   formant shift, and a Hard Tune control for dialing in anything from
+   subtle correction to a fully quantized, robotic effect. Notes can be
+   enabled/disabled individually via the on-screen keyboard, or set in
+   one click using the Scale Preset menu (Major, Natural Minor,
+   Harmonic Minor, pentatonic scales, Blues, Dorian, Mixolydian, and
+   more), combined with a selectable root key.
+
+3. De-Esser
+   Frequency-targeted sibilance control with adjustable center
+   frequency, threshold, and reduction range.
+
+4. Compressor
+   Threshold, ratio, attack, release, knee, and makeup gain, with a
+   live transfer-curve display and gain-reduction meter.
+
+5. Saturation
+   Four drive characters (Tape, Tube, Clip, Foldback) with drive,
+   tone, mix, and output controls.
+
+6. Harmonizer
+   Two independently tunable harmony voices (in semitones), with mix,
+   grain size, humanize, and stereo width controls.
+
+7. Reverb
+   Size, damping, width, pre-delay, mix, and a freeze mode for infinite
+   sustained pads.
+
+8. Delay
+   Time, feedback, mix, tone (damping filter), and a ping-pong stereo
+   mode.
+
+
+PRESETS
+-------
+50 factory presets are included, organized loosely by use case:
+broadcast/podcast/voiceover, mainstream pop, R&B/hip-hop/trap, rock and
+metal, vintage/lo-fi character, ambient/cinematic textures, live/room
+sounds, choir/harmony-forward settings, and a handful of genre and
+special-purpose effects (telephone FX, robot voice, ASMR, etc.).
+
+You can also save your own presets. User presets are stored as
+.svpreset XML files in:
+
+    ~/Documents/SimpleVocals/Presets/
+
+Use the preset bar's Prev/Next arrows to step through the full preset
+list (factory presets first, then your saved user presets), or open
+the preset menu to jump directly to one by name.
+
+
+BUILDING FROM SOURCE
+---------------------
+Requirements:
+  - CMake 3.22+
+  - A C++17 compiler
+  - JUCE (either a local checkout at $HOME/JUCE, or it will be fetched
+    automatically via CMake's FetchContent)
+
+To build:
+
+    ./build.sh
+
+This configures a Release build in ./build and compiles the VST3 and
+Standalone targets. On macOS, macrun.sh / run.sh are provided as
+convenience scripts for launching the Standalone build during
+development.
+
+
+PLUGIN FORMATS
+---------------
+  - VST3
+  - Standalone
+
+
+SUPPORT / FEEDBACK
+-------------------
+This is an independent, in-development project. If you run into
+issues or have ideas for new modules or presets, keep notes and file
+them alongside the project source for the next round of development.
