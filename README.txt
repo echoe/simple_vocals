@@ -3,6 +3,8 @@ SimpleVocals
 A JUCE-based vocal channel-strip plugin (VST3 / Standalone) for macOS and
 Linux, built around a reorderable chain of eight processing modules.
 
+This was written almost entirely with AI, so YMMV!
+
 <img src=https://raw.githubusercontent.com/echoe/simple_vocals/refs/heads/main/simplevocals.png width="600" height="360" />
 
 OVERVIEW
