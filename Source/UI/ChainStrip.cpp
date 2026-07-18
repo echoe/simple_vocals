@@ -22,23 +22,25 @@ void ChainStrip::rebuild()
 
 // ─────────────────────────────────────────────────────────── helpers
 
-juce::Rectangle<int> ChainStrip::rowBounds (int idx) const
+juce::Rectangle<int> ChainStrip::colBounds (int idx) const
 {
-    return { 0, kHeaderH + idx * kRowH, getWidth(), kRowH };
+    int w = colWidth();
+    return { idx * w, kHeaderH, w, getHeight() - kHeaderH };
 }
 
-int ChainStrip::rowAtY (int y) const
+int ChainStrip::colAtX (int x) const
 {
-    if (y < kHeaderH) return -1;
-    int row = (y - kHeaderH) / kRowH;
-    return juce::isPositiveAndBelow (row, (int) modules.size()) ? row : -1;
+    int w = colWidth();
+    if (w <= 0) return -1;
+    int col = x / w;
+    return juce::isPositiveAndBelow (col, (int) modules.size()) ? col : -1;
 }
 
-int ChainStrip::computeDropTarget (int mouseY) const
+int ChainStrip::computeDropTarget (int mouseX) const
 {
-    // The drop slot is determined by which half of a row the ghost centre is in
-    int rel = mouseY - kHeaderH;
-    int target = rel / kRowH;
+    int w = colWidth();
+    if (w <= 0) return 0;
+    int target = mouseX / w;
     return juce::jlimit (0, (int) modules.size() - 1, target);
 }
 
@@ -81,9 +83,9 @@ void ChainStrip::drawToggle (juce::Graphics& g, juce::Rectangle<int> area,
     g.fillEllipse (knobX - knobR, knobY - knobR, knobR * 2.0f, knobR * 2.0f);
 }
 
-void ChainStrip::drawRow (juce::Graphics& g, int idx,
-                           juce::Rectangle<int> bounds,
-                           bool ghost, bool dimmed) const
+void ChainStrip::drawCell (juce::Graphics& g, int idx,
+                            juce::Rectangle<int> bounds,
+                            bool ghost, bool dimmed) const
 {
     float alpha = dimmed ? 0.22f : 1.0f;
 
@@ -101,29 +103,18 @@ void ChainStrip::drawRow (juce::Graphics& g, int idx,
         g.fillRect (bounds);
     }
 
-    // Drag-handle dots (three dots on left edge)
-    if (! ghost)
-    {
-        float cx  = (float) kPad + 3.0f;
-        float cy0 = (float) bounds.getCentreY() - 4.0f;
-        g.setColour (juce::Colours::white.withAlpha (0.2f * alpha));
-        for (int d = 0; d < 3; ++d)
-            g.fillEllipse (cx - 1.5f, cy0 + (float) d * 4.0f - 1.5f, 3.0f, 3.0f);
-    }
-
-    // Module name
+    // Module name — centred, above the toggle band
     auto& info = modules[(size_t) idx];
-    g.setFont (juce::Font (juce::FontOptions().withHeight (12.0f).withStyle ("Bold")));
+    auto nameBounds = bounds.withTrimmedBottom (kToggleH).reduced (kPad, 0);
+    g.setFont (juce::Font (juce::FontOptions().withHeight (11.5f).withStyle ("Bold")));
     g.setColour (juce::Colours::white.withAlpha (alpha * (getEnabled (idx) ? 0.88f : 0.38f)));
-    auto textBounds = bounds.reduced (kPad + 10, 0).withTrimmedRight (kToggleW);
-    g.drawText (info.name, textBounds, juce::Justification::centredLeft);
+    g.drawFittedText (info.name, nameBounds, juce::Justification::centred, 2);
 
-    // Toggle switch
-    auto toggleArea = juce::Rectangle<int> (bounds.getRight() - kToggleW,
-                                             bounds.getY(),
-                                             kToggleW,
-                                             bounds.getHeight());
-    drawToggle (g, toggleArea.reduced (4, 10), getEnabled (idx), alpha);
+    // Toggle switch — centred pill along the bottom of the cell
+    auto toggleArea = juce::Rectangle<int> (bounds.getX() + bounds.getWidth() / 2 - 16,
+                                             bounds.getBottom() - kToggleH,
+                                             32, kToggleH);
+    drawToggle (g, toggleArea.reduced (2), getEnabled (idx), alpha);
 }
 
 // ─────────────────────────────────────────────────────────── paint
@@ -131,60 +122,61 @@ void ChainStrip::drawRow (juce::Graphics& g, int idx,
 void ChainStrip::paint (juce::Graphics& g)
 {
     // Header
-    g.setFont (juce::Font (juce::FontOptions().withHeight (9.5f).withStyle ("Bold")));
+    g.setFont (juce::Font (juce::FontOptions().withHeight (9.0f).withStyle ("Bold")));
     g.setColour (juce::Colours::white.withAlpha (0.28f));
-    g.drawText ("CHAIN", 0, 0, getWidth(), kHeaderH, juce::Justification::centred);
+    g.drawText ("CHAIN  (drag to reorder)", 6, 0, getWidth() - 12, kHeaderH, juce::Justification::centredLeft);
 
     // Separator under header
     g.setColour (juce::Colours::white.withAlpha (0.06f));
-    g.drawLine (4.0f, (float) kHeaderH, (float) getWidth() - 4.0f, (float) kHeaderH, 0.5f);
+    g.drawLine (0.0f, (float) kHeaderH, (float) getWidth(), (float) kHeaderH, 0.5f);
 
-    // Normal rows
+    // Normal cells
     for (int i = 0; i < (int) modules.size(); ++i)
     {
         bool isDimmed = (i == draggingIdx);
-        drawRow (g, i, rowBounds (i), false, isDimmed);
+        drawCell (g, i, colBounds (i), false, isDimmed);
 
-        // Row bottom separator
+        // Column right-edge separator
         g.setColour (juce::Colours::white.withAlpha (0.05f));
-        int sepY = kHeaderH + (i + 1) * kRowH;
-        g.drawLine (4.0f, (float) sepY, (float) getWidth() - 4.0f, (float) sepY, 0.5f);
+        int sepX = (i + 1) * colWidth();
+        g.drawLine ((float) sepX, (float) kHeaderH, (float) sepX, (float) getHeight(), 0.5f);
     }
 
     // Insertion indicator
     if (draggingIdx >= 0 && dropTargetIdx >= 0)
     {
-        int lineY = (dropTargetIdx <= draggingIdx)
-                    ? rowBounds (dropTargetIdx).getY()
-                    : rowBounds (dropTargetIdx).getBottom();
+        int lineX = (dropTargetIdx <= draggingIdx)
+                    ? colBounds (dropTargetIdx).getX()
+                    : colBounds (dropTargetIdx).getRight();
 
         g.setColour (juce::Colour (0xff6688ff));
-        g.fillRect (4, lineY - 1, getWidth() - 8, 2);
+        g.fillRect (lineX - 1, kHeaderH + 2, 2, getHeight() - kHeaderH - 4);
 
         // Small triangle markers at each end
-        float tx  = 3.0f;
-        float ty  = (float) lineY;
+        float tx = (float) lineX;
+        float ty = (float) kHeaderH + 2.0f;
         juce::Path tri;
-        tri.addTriangle (tx, ty - 4, tx, ty + 4, tx + 6, ty);
+        tri.addTriangle (tx - 4, ty, tx + 4, ty, tx, ty + 6);
         g.fillPath (tri);
         tri.clear();
-        tx = (float) (getWidth() - 3);
-        tri.addTriangle (tx, ty - 4, tx, ty + 4, tx - 6, ty);
+        ty = (float) getHeight() - 2.0f;
+        tri.addTriangle (tx - 4, ty, tx + 4, ty, tx, ty - 6);
         g.fillPath (tri);
     }
 
-    // Floating ghost row (drawn last so it's always on top)
+    // Floating ghost cell (drawn last so it's always on top)
     if (draggingIdx >= 0)
     {
-        int ghostY = juce::jlimit (kHeaderH,
-                                   kHeaderH + (int) modules.size() * kRowH - kRowH,
-                                   dragCurrentY - dragStartRowY);
+        int w = colWidth();
+        int ghostX = juce::jlimit (0,
+                                   (int) modules.size() * w - w,
+                                   dragCurrentX - dragStartColX);
 
         // Drop shadow
         g.setColour (juce::Colours::black.withAlpha (0.45f));
-        g.fillRoundedRectangle (juce::Rectangle<int> (1, ghostY + 3, getWidth() - 2, kRowH).toFloat(), 3.0f);
+        g.fillRoundedRectangle (juce::Rectangle<int> (ghostX + 3, kHeaderH + 1, w, getHeight() - kHeaderH - 2).toFloat(), 3.0f);
 
-        drawRow (g, draggingIdx, rowBounds (draggingIdx).withY (ghostY), true, false);
+        drawCell (g, draggingIdx, colBounds (draggingIdx).withX (ghostX), true, false);
     }
 }
 
@@ -192,44 +184,45 @@ void ChainStrip::paint (juce::Graphics& g)
 
 void ChainStrip::mouseDown (const juce::MouseEvent& e)
 {
-    int row = rowAtY (e.y);
-    if (row < 0) return;
+    int col = colAtX (e.x);
+    if (col < 0 || e.y < kHeaderH) return;
 
-    if (inToggleArea (e.x))
+    if (inToggleArea (e.y))
     {
         // Immediate toggle on click — no drag
-        setEnabled (row, ! getEnabled (row));
+        setEnabled (col, ! getEnabled (col));
         repaint();
         return;
     }
 
     // Record potential drag start
-    potentialDragRow = row;
-    dragStartAbsY    = e.y;
-    dragStartRowY    = e.y - rowBounds (row).getY();
-    dragCurrentY     = e.y;
+    potentialDragCol = col;
+    dragStartAbsX    = e.x;
+    dragStartColX    = e.x - colBounds (col).getX();
+    dragCurrentX     = e.x;
     draggingIdx      = -1;
     dropTargetIdx    = -1;
 }
 
 void ChainStrip::mouseDrag (const juce::MouseEvent& e)
 {
-    if (potentialDragRow < 0) return;
+    if (potentialDragCol < 0) return;
 
     // Commit to dragging once the threshold is crossed
-    if (draggingIdx < 0 && std::abs (e.y - dragStartAbsY) > kDragThreshold)
+    if (draggingIdx < 0 && std::abs (e.x - dragStartAbsX) > kDragThreshold)
     {
-        draggingIdx   = potentialDragRow;
+        draggingIdx   = potentialDragCol;
         dropTargetIdx = draggingIdx;
         setMouseCursor (juce::MouseCursor::DraggingHandCursor);
     }
 
     if (draggingIdx >= 0)
     {
-        dragCurrentY  = e.y;
+        dragCurrentX  = e.x;
         // Ghost centre determines the target slot
-        int ghostCentreY = dragCurrentY - dragStartRowY + kRowH / 2;
-        dropTargetIdx    = computeDropTarget (ghostCentreY);
+        int w = colWidth();
+        int ghostCentreX = dragCurrentX - dragStartColX + w / 2;
+        dropTargetIdx     = computeDropTarget (ghostCentreX);
         repaint();
     }
 }
@@ -240,7 +233,7 @@ void ChainStrip::mouseUp (const juce::MouseEvent&)
         effectChain.moveModule (draggingIdx, dropTargetIdx);
 
     draggingIdx      = -1;
-    potentialDragRow = -1;
+    potentialDragCol = -1;
     dropTargetIdx    = -1;
     setMouseCursor (juce::MouseCursor::NormalCursor);
     rebuild();   // refresh display order from chain
@@ -248,13 +241,13 @@ void ChainStrip::mouseUp (const juce::MouseEvent&)
 
 void ChainStrip::mouseMove (const juce::MouseEvent& e)
 {
-    int row = rowAtY (e.y);
-    if (row < 0)
+    int col = colAtX (e.x);
+    if (col < 0 || e.y < kHeaderH)
         setMouseCursor (juce::MouseCursor::NormalCursor);
-    else if (inToggleArea (e.x))
+    else if (inToggleArea (e.y))
         setMouseCursor (juce::MouseCursor::PointingHandCursor);
     else
-        setMouseCursor (juce::MouseCursor::UpDownResizeCursor);
+        setMouseCursor (juce::MouseCursor::LeftRightResizeCursor);
 }
 
 void ChainStrip::mouseExit (const juce::MouseEvent&)

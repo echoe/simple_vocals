@@ -27,35 +27,34 @@ SimpleVocalsAudioProcessorEditor::SimpleVocalsAudioProcessorEditor (SimpleVocals
     addAndMakeVisible (harmonizerPanel);
     addAndMakeVisible (reverbPanel);
 
-    constexpr int rightW    = 798;
-    constexpr int panelRowH = 220;
-    int rightH = kPresetBarH + kMargin
-               + kEQH         + kMargin
-               + kEQControlsH + kMargin
-               + kAutoH        + kMargin
-               + panelRowH    + kMargin
-               + panelRowH    + kMargin;
-    int chainH = kPresetBarH + kMargin
-               + EffectChain::numModules * 38 + 18 + kMargin;
-    setSize (kChainW + kMargin * 3 + rightW, std::max (chainH, rightH));
+    constexpr int rightColW  = 620;   // 3 x 2 grid of module panels
+    constexpr int panelRowH  = 220;
+
+    int leftColH  = kEQH + kMargin + kEQControlsH + kMargin + kAutoH;
+    int rightColH = panelRowH * 2 + kMargin;
+    int bodyH     = std::max (leftColH, rightColH);
+
+    int totalW = kMargin + kLeftColW + kMargin + rightColW + kMargin;
+    int totalH = kPresetBarH + kMargin + kChainH + kMargin + bodyH + kMargin;
+
+    setSize (totalW, totalH);
 }
 
 void SimpleVocalsAudioProcessorEditor::paint (juce::Graphics& g)
 {
     g.fillAll (juce::Colour (0xff14141a));
 
-    // Chain strip background panel
+    // Background panel behind the chain strip
     g.setColour (juce::Colours::white.withAlpha (0.03f));
     g.fillRoundedRectangle (
         juce::Rectangle<int> (kMargin, kPresetBarH + kMargin,
-                              kChainW, getHeight() - kPresetBarH - kMargin * 2).toFloat(), 4.0f);
+                              getWidth() - kMargin * 2, kChainH).toFloat(), 4.0f);
 
-    // Separator between chain and right area
+    // Separator below the chain strip
     g.setColour (juce::Colours::white.withAlpha (0.06f));
-    g.drawLine ((float) (kMargin + kChainW + kMargin / 2),
-                (float) (kPresetBarH + kMargin),
-                (float) (kMargin + kChainW + kMargin / 2),
-                (float) (getHeight() - kMargin), 1.0f);
+    int sepY = kPresetBarH + kMargin + kChainH + kMargin / 2;
+    g.drawLine ((float) kMargin, (float) sepY,
+                (float) (getWidth() - kMargin), (float) sepY, 1.0f);
 }
 
 void SimpleVocalsAudioProcessorEditor::resized()
@@ -66,21 +65,23 @@ void SimpleVocalsAudioProcessorEditor::resized()
     presetBar.setBounds (full.removeFromTop (kPresetBarH));
     full.removeFromTop (kMargin);
 
-    // Chain strip — left column, full remaining height
-    chainStrip.setBounds (full.removeFromLeft (kChainW).withTrimmedLeft (kMargin));
+    // Chain strip — full width, runs left to right
+    chainStrip.setBounds (full.removeFromTop (kChainH));
+    full.removeFromTop (kMargin);
+
+    // Left column: EQ curve, EQ band controls, Autotune (narrowed)
+    auto left = full.removeFromLeft (kLeftColW);
     full.removeFromLeft (kMargin);
 
-    // Right content area
-    auto right = full.withTrimmedRight (kMargin);
+    eqCurve.setBounds       (left.removeFromTop (kEQH));
+    left.removeFromTop      (kMargin);
+    eqControls.setBounds    (left.removeFromTop (kEQControlsH));
+    left.removeFromTop      (kMargin);
+    autotuneStrip.setBounds (left.removeFromTop (kAutoH));
 
-    eqCurve.setBounds       (right.removeFromTop (kEQH));
-    right.removeFromTop     (kMargin);
-    eqControls.setBounds    (right.removeFromTop (kEQControlsH));
-    right.removeFromTop     (kMargin);
-    autotuneStrip.setBounds (right.removeFromTop (kAutoH));
-    right.removeFromTop     (kMargin);
+    // Right column: 2 x 3 grid of module panels
+    auto right = full;
 
-    // 2 × 3 panel grid
     std::array<juce::Component*, 6> panels {
         &deEsserPanel, &compressorPanel, &delayPanel,
         &saturationPanel, &harmonizerPanel, &reverbPanel

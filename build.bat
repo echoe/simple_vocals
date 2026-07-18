@@ -1,21 +1,21 @@
 @echo off
-echo --- STARTING WINDOWS CMAKE BUILD ---
+setlocal
 
-:: 1. Completely nuke the old build cache folder if it exists
 if exist build (
-    echo Clearing existing build directory...
     rmdir /s /q build
 )
 
-:: 2. Recreate a clean build folder
-mkdir build
-cd build
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+if errorlevel 1 goto :error
 
-:: 3. Configure the project using the default Visual Studio generator
-cmake ..
+cmake --build build --config Release --parallel 4
+if errorlevel 1 goto :error
 
-:: 4. Build the Release binaries using all available CPU cores
-cmake --build . --config Release --parallel
+echo.
+echo Build succeeded.
+goto :eof
 
-echo --- BUILD COMPLETE ---
-pause
+:error
+echo.
+echo Build failed.
+exit /b 1

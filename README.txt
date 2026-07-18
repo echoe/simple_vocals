@@ -3,7 +3,6 @@ SimpleVocals
 A JUCE-based vocal channel-strip plugin (VST3 / Standalone) for macOS and
 Linux, built around a reorderable chain of eight processing modules.
 
-Butting in for just a second: from the publisher, This is made almost fully with AI: I don't know much about voice processing and right now I don't want to, so ... yeah. But I wanted to see what the AI could make.
 
 OVERVIEW
 --------
@@ -84,7 +83,11 @@ Requirements:
 
 To build:
 
-    ./build.sh
+    ./build.sh          (macOS / Linux)
+    build.bat           (Windows — run from a shell with CMake and a C++
+                          compiler on PATH, e.g. the "Developer Command
+                          Prompt for VS" or a regular prompt with the
+                          Visual Studio Build Tools installed)
 
 This configures a Release build in ./build and compiles the VST3 and
 Standalone targets. On macOS, macrun.sh / run.sh are provided as
