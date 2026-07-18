@@ -5,7 +5,7 @@ Linux, built around a reorderable chain of eight processing modules.
 
 This was written almost entirely with AI, so YMMV!
 
-<img src=https://raw.githubusercontent.com/echoe/simple_vocals/refs/heads/main/simplevocals.png width="600" height="360" />
+If you'd like to see a screenshot look at the picture in the main directory.
 
 OVERVIEW
 --------
