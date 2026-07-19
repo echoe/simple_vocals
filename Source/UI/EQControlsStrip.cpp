@@ -9,7 +9,7 @@ void EQControlsStrip::setupSlider (juce::Slider& s)
     s.setColour (juce::Slider::backgroundColourId, juce::Colour (0xff222230));
 }
 
-EQControlsStrip::EQControlsStrip (juce::AudioProcessorValueTreeState& apvts)
+EQControlsStrip::EQControlsStrip (juce::AudioProcessorValueTreeState& apvts, juce::String idPrefix)
 {
     for (int i = 0; i < EQModule::maxBands; ++i)
     {
@@ -19,27 +19,27 @@ EQControlsStrip::EQControlsStrip (juce::AudioProcessorValueTreeState& apvts)
         band.enableToggle.setButtonText ({});
         addAndMakeVisible (band.enableToggle);
         band.enableAtt = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment> (
-            apvts, EQModule::bandParamID (i, "enabled"), band.enableToggle);
+            apvts, EQModule::bandParamID (idPrefix, i, "enabled"), band.enableToggle);
 
         // Q slider
         setupSlider (band.qSlider);
         addAndMakeVisible (band.qSlider);
         band.qAtt = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
-            apvts, EQModule::bandParamID (i, "q"), band.qSlider);
+            apvts, EQModule::bandParamID (idPrefix, i, "q"), band.qSlider);
 
         // Threshold slider
         setupSlider (band.threshSlider);
         band.threshSlider.setColour (juce::Slider::thumbColourId, juce::Colour (0xffe07840));
         addAndMakeVisible (band.threshSlider);
         band.threshAtt = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
-            apvts, EQModule::bandParamID (i, "threshold"), band.threshSlider);
+            apvts, EQModule::bandParamID (idPrefix, i, "threshold"), band.threshSlider);
 
         // Ratio slider
         setupSlider (band.ratioSlider);
         band.ratioSlider.setColour (juce::Slider::thumbColourId, juce::Colour (0xff40b080));
         addAndMakeVisible (band.ratioSlider);
         band.ratioAtt = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
-            apvts, EQModule::bandParamID (i, "ratio"), band.ratioSlider);
+            apvts, EQModule::bandParamID (idPrefix, i, "ratio"), band.ratioSlider);
     }
 }
 

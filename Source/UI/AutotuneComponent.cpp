@@ -82,6 +82,9 @@ AutotuneComponent::AutotuneComponent (juce::AudioProcessorValueTreeState& a,
     presetButton.onClick = [this] { showScalePresetMenu(); };
     addAndMakeVisible (presetButton);
 
+    detectKeyButton.onClick = [this] { toggleKeyDetect(); };
+    addAndMakeVisible (detectKeyButton);
+
     // Compact sliders
     makeCompactSlider (speedSlider);     makeLabel (speedLabel,     "Speed");
     makeCompactSlider (amountSlider);    makeLabel (amountLabel,    "Amount");
@@ -122,10 +125,30 @@ void AutotuneComponent::timerCallback()
     }
     if (autotuneModule != nullptr)
     {
-        detectedHistory[(size_t)(historyWriteIdx % kHistoryLen)] = hzToMidi (autotuneModule->getDetectedHz());
+        float hz = autotuneModule->getDetectedHz();
+        detectedHistory[(size_t)(historyWriteIdx % kHistoryLen)] = hzToMidi (hz);
         targetHistory  [(size_t)(historyWriteIdx % kHistoryLen)] = hzToMidi (autotuneModule->getTargetHz());
         ++historyWriteIdx;
+
+        if (keyDetectActive)
+        {
+            float conf = autotuneModule->getConfidence();
+            if (hz > 20.0f && conf > 0.3f)
+            {
+                float midi = hzToMidi (hz);
+                int   pc   = ((int) std::round (midi)) % 12;
+                if (pc < 0) pc += 12;
+                chromaAccum[(size_t) pc] += conf;
+            }
+
+            if (++keyDetectTicks >= kKeyDetectMaxTicks)
+                finishKeyDetect();
+        }
     }
+
+    if (keyResultShowTicks > 0 && --keyResultShowTicks == 0)
+        detectKeyButton.setButtonText ("Auto Key");
+
     repaint();
 }
 
@@ -137,11 +160,13 @@ void AutotuneComponent::resized()
     auto ctrl = b.removeFromRight (kCtrlW);
     b.removeFromRight (6);
 
-    // Row 1: Root label + combo + preset button
+    // Row 1: Root label + combo + preset button + auto key-detect
     auto row1 = ctrl.removeFromTop (22);
     rootLabel.setBounds (row1.removeFromLeft (40));
     rootBox.setBounds   (row1.removeFromLeft (52));
     row1.removeFromLeft (4);
+    detectKeyButton.setBounds (row1.removeFromRight (82));
+    row1.removeFromRight (4);
     presetButton.setBounds (row1);
     ctrl.removeFromTop (4);
 
@@ -367,6 +392,88 @@ void AutotuneComponent::applyScale (int rootKey, const int* intervals, int count
         if (auto* p = apvts.getParameter ("auto_note_" + juce::String (note)))
         { p->beginChangeGesture(); p->setValueNotifyingHost (1.0f); p->endChangeGesture(); }
     }
+}
+
+// ─── auto key-detect ────────────────────────────────────────────────────────
+
+void AutotuneComponent::toggleKeyDetect()
+{
+    if (keyDetectActive)
+    {
+        finishKeyDetect();
+        return;
+    }
+
+    keyDetectActive    = true;
+    keyDetectTicks     = 0;
+    keyResultShowTicks = 0;
+    chromaAccum.fill (0.0f);
+    detectKeyButton.setButtonText ("Listening...");
+}
+
+void AutotuneComponent::finishKeyDetect()
+{
+    keyDetectActive = false;
+
+    float total = 0.0f;
+    for (float v : chromaAccum) total += v;
+
+    if (total < 0.001f)
+    {
+        detectKeyButton.setButtonText ("No signal");
+        keyResultShowTicks = 45;   // ~1.5s at 30Hz, then reverts to "Auto Key"
+        return;
+    }
+
+    bool isMinor = false;
+    int  root    = bestKeyFromChroma (chromaAccum, isMinor);
+
+    // Apply as Major or Natural Minor rooted at the detected key.
+    // kPresets[1] = "Major", kPresets[2] = "Natural Minor" (see table above).
+    const auto& preset = kPresets[isMinor ? 2 : 1];
+    applyScale (root, preset.intervals, preset.count);
+
+    rootBox.setSelectedItemIndex (root, juce::dontSendNotification);
+    if (auto* p = apvts.getParameter ("auto_key"))
+    { p->beginChangeGesture();
+      p->setValueNotifyingHost (p->convertTo0to1 ((float) root));
+      p->endChangeGesture(); }
+
+    detectKeyButton.setButtonText (juce::String (kNoteNames[root]) + (isMinor ? " Minor" : " Major"));
+    keyResultShowTicks = 60;   // ~2s at 30Hz, then reverts to "Auto Key"
+}
+
+int AutotuneComponent::bestKeyFromChroma (const std::array<float, 12>& chroma, bool& isMinor)
+{
+    // Krumhansl-Kessler tonal-hierarchy key profiles: how strongly each
+    // scale degree is perceived to "belong" to a major/minor key, rated
+    // 0-6.35 from listening studies. Correlating a pitch-class histogram
+    // against rotations of these profiles is the classic Krumhansl-
+    // Schmuckler key-finding algorithm.
+    static constexpr float kMajorProfile[12] =
+        { 6.35f, 2.23f, 3.48f, 2.33f, 4.38f, 4.09f, 2.52f, 5.19f, 2.39f, 3.66f, 2.29f, 2.88f };
+    static constexpr float kMinorProfile[12] =
+        { 6.33f, 2.68f, 3.52f, 5.38f, 2.60f, 3.53f, 2.54f, 4.75f, 3.98f, 2.69f, 3.34f, 3.17f };
+
+    int   bestRoot    = 0;
+    bool  bestIsMinor = false;
+    float bestScore   = -1.0e9f;
+
+    for (int root = 0; root < 12; ++root)
+    {
+        float scoreMajor = 0.0f, scoreMinor = 0.0f;
+        for (int i = 0; i < 12; ++i)
+        {
+            float c = chroma[(size_t) ((root + i) % 12)];
+            scoreMajor += c * kMajorProfile[i];
+            scoreMinor += c * kMinorProfile[i];
+        }
+        if (scoreMajor > bestScore) { bestScore = scoreMajor; bestRoot = root; bestIsMinor = false; }
+        if (scoreMinor > bestScore) { bestScore = scoreMinor; bestRoot = root; bestIsMinor = true;  }
+    }
+
+    isMinor = bestIsMinor;
+    return bestRoot;
 }
 
 void AutotuneComponent::showScalePresetMenu()

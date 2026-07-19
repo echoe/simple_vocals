@@ -39,7 +39,7 @@ public:
         return nullptr;
     }
 
-    static constexpr int numModules = 8;
+    static constexpr int numModules = 9;
 
 private:
     std::vector<std::unique_ptr<EffectModule>> modules; // fixed storage, indexed by identity

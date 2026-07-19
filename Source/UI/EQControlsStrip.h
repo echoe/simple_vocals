@@ -19,7 +19,8 @@
 class EQControlsStrip : public juce::Component
 {
 public:
-    explicit EQControlsStrip (juce::AudioProcessorValueTreeState& apvts);
+    explicit EQControlsStrip (juce::AudioProcessorValueTreeState& apvts,
+                               juce::String idPrefix = "eq");
 
     void paint   (juce::Graphics&) override;
     void resized () override;

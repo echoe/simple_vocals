@@ -35,7 +35,19 @@ private:
     // ── Controls ──────────────────────────────────────────────────────────
     juce::ComboBox  rootBox;
     juce::Label     rootLabel;
-    juce::TextButton presetButton { "Scale Preset" };
+    juce::TextButton presetButton    { "Scale Preset" };
+    juce::TextButton detectKeyButton { "Auto Key" };
+
+    // Auto key-detect: samples the module's already-computed detectedHz/
+    // confidence at the UI timer rate (30Hz) and builds a pitch-class
+    // histogram (chroma vector) while listening. On stop, correlates the
+    // histogram against Krumhansl-Kessler major/minor key profiles and
+    // applies the best-matching root + scale.
+    bool  keyDetectActive    = false;
+    int   keyDetectTicks     = 0;
+    int   keyResultShowTicks = 0;
+    std::array<float, 12> chromaAccum {};
+    static constexpr int kKeyDetectMaxTicks = 150;  // ~5s at 30Hz
 
     juce::Slider speedSlider, amountSlider, mixSlider, formantSlider, characterSlider;
     juce::Label  speedLabel,  amountLabel,  mixLabel,  formantLabel,  characterLabel;
@@ -66,6 +78,11 @@ private:
     // Scale presets
     void showScalePresetMenu();
     void applyScale (int rootKey, const int* intervals, int count);
+
+    // Auto key-detect
+    void toggleKeyDetect();
+    void finishKeyDetect();
+    static int bestKeyFromChroma (const std::array<float, 12>& chroma, bool& isMinor);
 
     static void makeCompactSlider (juce::Slider&);
     static void makeLabel         (juce::Label&, const juce::String& text);

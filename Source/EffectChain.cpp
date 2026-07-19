@@ -15,7 +15,14 @@ namespace
 
 EffectChain::EffectChain()
 {
-    // Default signal flow: EQ -> Autotune -> De-esser -> Compressor -> Saturation -> Harmonizer -> Reverb.
+    // Default signal flow: EQ -> Autotune -> De-esser -> Compressor -> Saturation
+    // -> Harmonizer -> Reverb -> Delay -> EQ 2.
+    // EQ 2 is a second, independent parametric EQ instance (its own band
+    // parameters, prefixed "eq2_") that can be dragged to any position in the
+    // chain via the chain strip — e.g. one EQ before the compressor for
+    // corrective work, a second one after everything for tonal shaping.
+    // At its default band gains (0 dB) it's audibly transparent, so adding
+    // it doesn't change the sound of existing presets/projects.
     // Index in `modules` is each module's permanent identity; `order` is what the UI reorders.
     modules.push_back (std::make_unique<EQModule>());
     modules.push_back (std::make_unique<AutotuneModule>());
@@ -25,6 +32,7 @@ EffectChain::EffectChain()
     modules.push_back (std::make_unique<HarmonizerModule>());
     modules.push_back (std::make_unique<ReverbModule>());
     modules.push_back (std::make_unique<DelayModule>());
+    modules.push_back (std::make_unique<EQModule> ("eq2", "EQ 2"));
 
     jassert ((int) modules.size() == numModules);
 

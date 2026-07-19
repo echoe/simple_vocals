@@ -49,6 +49,7 @@ target_sources(SimpleVocals
         Source/UI/EQCurveComponent.cpp
         Source/UI/EQControlsStrip.cpp
         Source/UI/ChainStrip.cpp
+        Source/UI/AutoChainButton.cpp
         Source/UI/DeEsserPanel.cpp
         Source/UI/CompressorPanel.cpp
         Source/UI/SaturationPanel.cpp

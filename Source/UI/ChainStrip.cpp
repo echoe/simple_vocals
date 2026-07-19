@@ -124,7 +124,7 @@ void ChainStrip::paint (juce::Graphics& g)
     // Header
     g.setFont (juce::Font (juce::FontOptions().withHeight (9.0f).withStyle ("Bold")));
     g.setColour (juce::Colours::white.withAlpha (0.28f));
-    g.drawText ("CHAIN  (drag to reorder)", 6, 0, getWidth() - 12, kHeaderH, juce::Justification::centredLeft);
+    g.drawText ("CHAIN  (drag to reorder, left to right)", 6, 0, getWidth() - 12, kHeaderH, juce::Justification::centredLeft);
 
     // Separator under header
     g.setColour (juce::Colours::white.withAlpha (0.06f));

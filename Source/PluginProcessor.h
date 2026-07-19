@@ -38,8 +38,28 @@ public:
     juce::AudioProcessorValueTreeState apvts;       // createParameterLayout() needs effectChain alive
     PresetManager presetManager;                    // must be after both effectChain and apvts
 
+    // ── Chain analysis (for the "Auto Chain" feature) ───────────────────────
+    // While active, taps the dry input signal (before the effect chain
+    // processes it) and maintains smoothed level/tone statistics that the UI
+    // can read to build a heuristic starting chain configuration.
+    void startChainAnalysis() noexcept;
+    void stopChainAnalysis()  noexcept { chainAnalysisActive.store (false, std::memory_order_relaxed); }
+    bool isChainAnalysisActive() const noexcept { return chainAnalysisActive.load (std::memory_order_relaxed); }
+
+    float getAnalysisRmsDb()   const noexcept { return analysisRmsDb.load   (std::memory_order_relaxed); }
+    float getAnalysisPeakDb()  const noexcept { return analysisPeakDb.load  (std::memory_order_relaxed); }
+    float getAnalysisHfRatio() const noexcept { return analysisHfRatio.load (std::memory_order_relaxed); }
+
 private:
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    void updateChainAnalysis (const juce::AudioBuffer<float>& dryBuffer);
+
+    std::atomic<bool>  chainAnalysisActive { false };
+    std::atomic<float> analysisRmsDb   { -60.0f };  // smoothed overall level
+    std::atomic<float> analysisPeakDb  { -60.0f };  // smoothed peak level (peak - rms ≈ crest factor)
+    std::atomic<float> analysisHfRatio { 0.0f };    // smoothed high-band / total energy, a sibilance proxy
+
+    juce::dsp::IIR::Filter<float> hfAnalysisFilter; // ~5 kHz highpass, mono, analysis-only
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleVocalsAudioProcessor)
 };

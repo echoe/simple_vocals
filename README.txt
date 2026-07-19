@@ -3,9 +3,6 @@ SimpleVocals
 A JUCE-based vocal channel-strip plugin (VST3 / Standalone) for macOS and
 Linux, built around a reorderable chain of eight processing modules.
 
-This was written almost entirely with AI, so YMMV!
-
-If you'd like to see a screenshot look at the picture in the main directory.
 
 OVERVIEW
 --------
@@ -19,19 +16,26 @@ everything from clean broadcast voice to heavy creative effects.
 
 MODULES
 -------
-1. EQ
-   Up to 8 fully parametric bands, each with its own frequency, gain,
-   Q, and an optional "dynamic" (compressing) mode with its own
-   threshold and ratio.
+1. EQ (x2)
+   Two independent, fully parametric EQ instances ("EQ 1" and "EQ 2"),
+   switchable via tabs above the curve display. Each has up to 8 bell
+   bands with its own frequency, gain, Q, and an optional "dynamic"
+   (compressing) mode with its own threshold and ratio. Because each EQ
+   has its own slot in the chain strip, the two can be placed at
+   different points in the signal flow — e.g. one early for corrective
+   work, one later for tonal shaping.
 
 2. Autotune
    Real-time pitch correction with adjustable speed, amount, mix,
    formant shift, and a Hard Tune control for dialing in anything from
    subtle correction to a fully quantized, robotic effect. Notes can be
-   enabled/disabled individually via the on-screen keyboard, or set in
-   one click using the Scale Preset menu (Major, Natural Minor,
-   Harmonic Minor, pentatonic scales, Blues, Dorian, Mixolydian, and
-   more), combined with a selectable root key.
+   enabled/disabled individually via the on-screen keyboard, set in one
+   click using the Scale Preset menu (Major, Natural Minor, Harmonic
+   Minor, pentatonic scales, Blues, Dorian, Mixolydian, and more)
+   combined with a selectable root key, or detected automatically:
+   the Auto Key button listens for a few seconds and picks the closest
+   matching major/minor key from the sung pitch (Krumhansl-Schmuckler
+   key-finding).
 
 3. De-Esser
    Frequency-targeted sibilance control with adjustable center
@@ -56,6 +60,24 @@ MODULES
 8. Delay
    Time, feedback, mix, tone (damping filter), and a ping-pong stereo
    mode.
+
+
+AUTO CHAIN
+----------
+The "Auto Chain" button (top right, next to the preset bar) listens to
+about 4 seconds of dry vocal and measures level, dynamics (crest
+factor), and high-frequency/sibilance energy, then applies a starting
+configuration across the whole chain: a standard vocal low-cut plus a
+touch of presence on EQ 1, a compressor and de-esser scaled to what it
+measured, light saturation and reverb as "glue", and a neutral
+chromatic Autotune (pair it with Auto Key if you want a specific key
+locked in). Harmonizer, Delay, and EQ 2 are left off, since those are
+stylistic choices rather than corrective ones. It also resets the
+chain to its default processing order.
+
+This is rule-based signal analysis, not a trained model — think of it
+as a fast, reasonable starting point to tweak from rather than a
+finished mix.
 
 
 PRESETS

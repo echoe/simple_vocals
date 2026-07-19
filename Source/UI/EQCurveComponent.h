@@ -16,7 +16,8 @@ class EQCurveComponent : public juce::Component,
                          private juce::Timer
 {
 public:
-    explicit EQCurveComponent (juce::AudioProcessorValueTreeState& apvts);
+    explicit EQCurveComponent (juce::AudioProcessorValueTreeState& apvts,
+                                juce::String idPrefix = "eq");
     ~EQCurveComponent() override;
 
     void paint (juce::Graphics&) override;
@@ -37,6 +38,7 @@ private:
     };
 
     juce::AudioProcessorValueTreeState& apvts;
+    juce::String idPrefix;
     std::array<BandParams, EQModule::maxBands> params;
     int draggingBand = -1;
 

@@ -10,7 +10,8 @@
 class EQModule : public EffectModule
 {
 public:
-    EQModule() : EffectModule ("eq") {}
+    explicit EQModule (juce::String idIn = "eq", juce::String displayNameIn = "EQ")
+        : EffectModule (std::move (idIn)), displayName (std::move (displayNameIn)) {}
 
     static constexpr int maxBands = 8;
 
@@ -19,14 +20,24 @@ public:
     void prepare (const juce::dsp::ProcessSpec& spec) override;
     void process (juce::AudioBuffer<float>& buffer) override;
     void reset() override;
-    juce::String getDisplayName() const override { return "EQ"; }
+    juce::String getDisplayName() const override { return displayName; }
 
-    static juce::String bandParamID (int bandIndex, const char* suffix)
+    /** Band parameter ID for a given instance prefix (e.g. "eq" or "eq2"),
+        so UI components can bind to either EQ instance's bands. */
+    static juce::String bandParamID (const juce::String& idPrefix, int bandIndex, const char* suffix)
     {
-        return "eq_band" + juce::String (bandIndex) + "_" + suffix;
+        return idPrefix + "_band" + juce::String (bandIndex) + "_" + suffix;
+    }
+
+    /** Convenience overload for use inside this instance (uses its own id). */
+    juce::String bandParamID (int bandIndex, const char* suffix) const
+    {
+        return bandParamID (moduleId, bandIndex, suffix);
     }
 
 private:
+    juce::String displayName;
+
     using Filter      = juce::dsp::IIR::Filter<float>;
     using FilterCoefs = juce::dsp::IIR::Coefficients<float>;
 

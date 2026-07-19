@@ -12,16 +12,17 @@ namespace
 
 // ------------------------------------------------------------------ lifecycle
 
-EQCurveComponent::EQCurveComponent (juce::AudioProcessorValueTreeState& a) : apvts (a)
+EQCurveComponent::EQCurveComponent (juce::AudioProcessorValueTreeState& a, juce::String prefix)
+    : apvts (a), idPrefix (std::move (prefix))
 {
     for (int i = 0; i < EQModule::maxBands; ++i)
     {
         auto& p = params[(size_t) i];
-        p.enabled  = apvts.getParameter (EQModule::bandParamID (i, "enabled"));
-        p.freq     = apvts.getParameter (EQModule::bandParamID (i, "freq"));
-        p.gain     = apvts.getParameter (EQModule::bandParamID (i, "gain"));
-        p.q        = apvts.getParameter (EQModule::bandParamID (i, "q"));
-        p.dynamic_ = apvts.getParameter (EQModule::bandParamID (i, "dynamic"));
+        p.enabled  = apvts.getParameter (EQModule::bandParamID (idPrefix, i, "enabled"));
+        p.freq     = apvts.getParameter (EQModule::bandParamID (idPrefix, i, "freq"));
+        p.gain     = apvts.getParameter (EQModule::bandParamID (idPrefix, i, "gain"));
+        p.q        = apvts.getParameter (EQModule::bandParamID (idPrefix, i, "q"));
+        p.dynamic_ = apvts.getParameter (EQModule::bandParamID (idPrefix, i, "dynamic"));
     }
     setInterceptsMouseClicks (true, false);
     startTimerHz (30);
