@@ -30,6 +30,8 @@ void SimpleVocalsAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
 
     hfAnalysisFilter.coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass (sampleRate, 5000.0f);
     hfAnalysisFilter.reset();
+
+    setLatencySamples (effectChain.getTotalLatencySamples());
 }
 
 void SimpleVocalsAudioProcessor::startChainAnalysis() noexcept
@@ -100,6 +102,13 @@ void SimpleVocalsAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         updateChainAnalysis (buffer);   // tap the dry signal before the chain mutates it in place
 
     effectChain.process (buffer);
+
+    // Latency (e.g. Autotune's Live/Studio grain size, or enabling/disabling
+    // Autotune) can change between blocks. Only call setLatencySamples() when
+    // it actually changed — it's a comparatively heavy host notification.
+    int newLatency = effectChain.getTotalLatencySamples();
+    if (newLatency != getLatencySamples())
+        setLatencySamples (newLatency);
 }
 
 juce::AudioProcessorEditor* SimpleVocalsAudioProcessor::createEditor()

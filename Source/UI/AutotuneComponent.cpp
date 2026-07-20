@@ -85,6 +85,22 @@ AutotuneComponent::AutotuneComponent (juce::AudioProcessorValueTreeState& a,
     detectKeyButton.onClick = [this] { toggleKeyDetect(); };
     addAndMakeVisible (detectKeyButton);
 
+    liveModeButton.setClickingTogglesState (false);
+    studioModeButton.setClickingTogglesState (false);
+    liveModeButton.onClick = [this] {
+        if (auto* p = apvts.getParameter ("auto_latency_mode"))
+        { p->beginChangeGesture(); p->setValueNotifyingHost (p->convertTo0to1 (0.0f)); p->endChangeGesture(); }
+        updateLatencyModeButtons();
+    };
+    studioModeButton.onClick = [this] {
+        if (auto* p = apvts.getParameter ("auto_latency_mode"))
+        { p->beginChangeGesture(); p->setValueNotifyingHost (p->convertTo0to1 (1.0f)); p->endChangeGesture(); }
+        updateLatencyModeButtons();
+    };
+    addAndMakeVisible (liveModeButton);
+    addAndMakeVisible (studioModeButton);
+    updateLatencyModeButtons();
+
     // Compact sliders
     makeCompactSlider (speedSlider);     makeLabel (speedLabel,     "Speed");
     makeCompactSlider (amountSlider);    makeLabel (amountLabel,    "Amount");
@@ -123,6 +139,7 @@ void AutotuneComponent::timerCallback()
         if (rootBox.getSelectedItemIndex() != idx)
             rootBox.setSelectedItemIndex (idx, juce::dontSendNotification);
     }
+    updateLatencyModeButtons();
     if (autotuneModule != nullptr)
     {
         float hz = autotuneModule->getDetectedHz();
@@ -168,6 +185,13 @@ void AutotuneComponent::resized()
     detectKeyButton.setBounds (row1.removeFromRight (82));
     row1.removeFromRight (4);
     presetButton.setBounds (row1);
+    ctrl.removeFromTop (4);
+
+    // Row 1b: Live / Studio latency mode
+    auto row1b = ctrl.removeFromTop (18);
+    int  halfW = row1b.getWidth() / 2;
+    liveModeButton.setBounds   (row1b.removeFromLeft (halfW).reduced (1, 0));
+    studioModeButton.setBounds (row1b.reduced (1, 0));
     ctrl.removeFromTop (4);
 
     // Row 2: Piano keyboard
@@ -379,6 +403,18 @@ void AutotuneComponent::mouseDown (const juce::MouseEvent& e)
 }
 
 // ─── scale presets ────────────────────────────────────────────────────────────
+
+void AutotuneComponent::updateLatencyModeButtons()
+{
+    int mode = 1;
+    if (auto* p = apvts.getParameter ("auto_latency_mode"))
+        mode = juce::roundToInt (p->convertFrom0to1 (p->getValue()));
+
+    auto activeColour   = juce::Colour (0xff4466cc);
+    auto inactiveColour = juce::Colour (0xff2a2a3a);
+    liveModeButton.setColour   (juce::TextButton::buttonColourId, mode == 0 ? activeColour : inactiveColour);
+    studioModeButton.setColour (juce::TextButton::buttonColourId, mode == 1 ? activeColour : inactiveColour);
+}
 
 void AutotuneComponent::applyScale (int rootKey, const int* intervals, int count)
 {

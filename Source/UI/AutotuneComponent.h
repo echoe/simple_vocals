@@ -38,6 +38,12 @@ private:
     juce::TextButton presetButton    { "Scale Preset" };
     juce::TextButton detectKeyButton { "Auto Key" };
 
+    // Latency mode: Live = low-latency monitoring, Studio = original smoother
+    // (higher-latency) correction. See AutotuneModule::kLiveGrainMs/kStudioGrainMs.
+    juce::TextButton liveModeButton   { "Live (10ms)" };
+    juce::TextButton studioModeButton { "Studio (120ms)" };
+    void updateLatencyModeButtons();
+
     // Auto key-detect: samples the module's already-computed detectedHz/
     // confidence at the UI timer rate (30Hz) and builds a pitch-class
     // histogram (chroma vector) while listening. On stop, correlates the

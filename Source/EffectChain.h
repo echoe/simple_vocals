@@ -18,6 +18,11 @@ public:
     void process (juce::AudioBuffer<float>& buffer);
     void reset();
 
+    /** Sum of all modules' current getLatencySamples() (0 for bypassed
+        modules). PluginProcessor polls this and reports it to the host via
+        setLatencySamples() whenever it changes, for delay compensation. */
+    int getTotalLatencySamples() const;
+
     /** Module pointers in current processing order, for UI display/reordering. */
     std::vector<EffectModule*> getModulesInOrder();
 

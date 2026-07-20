@@ -95,6 +95,9 @@ void AutotuneModule::addParameters (juce::AudioProcessorValueTreeState::Paramete
     layout.add (std::make_unique<juce::AudioParameterChoice> (
         juce::ParameterID { "auto_key",   1 }, "Key",
         juce::StringArray { "C","C#","D","Eb","E","F","F#","G","Ab","A","Bb","B" }, 0));
+    layout.add (std::make_unique<juce::AudioParameterChoice> (
+        juce::ParameterID { "auto_latency_mode", 1 }, "Latency Mode",
+        juce::StringArray { "Live", "Studio" }, 1));   // default Studio: matches the original fixed behaviour
 
     // 12 individual note toggles — the actual scale the corrector targets.
     // Default: all on (= chromatic, snap to nearest semitone).
@@ -113,6 +116,7 @@ void AutotuneModule::attachToState (juce::AudioProcessorValueTreeState& apvts)
     formantParam   = apvts.getRawParameterValue ("auto_formant");
     characterParam = apvts.getRawParameterValue ("auto_character");
     keyParam       = apvts.getRawParameterValue ("auto_key");
+    latencyModeParam = apvts.getRawParameterValue ("auto_latency_mode");
     for (int n = 0; n < 12; ++n)
         noteParams[(size_t) n] = apvts.getRawParameterValue ("auto_note_" + juce::String (n));
 }
@@ -125,7 +129,8 @@ void AutotuneModule::prepare (const juce::dsp::ProcessSpec& spec)
     analysisBuf.assign (kAnalysisN, 0.0f);
     analysisWriteIdx = hopCounter = 0;
     smoothedCorrSt   = 0.0f;
-    corrVoice.prepare (sampleRate, 120.0f);
+    corrVoiceLive.prepare   (sampleRate, kLiveGrainMs);
+    corrVoiceStudio.prepare (sampleRate, kStudioGrainMs);
 
     juce::dsp::ProcessSpec mono { spec.sampleRate, spec.maximumBlockSize, 1 };
     auto flat = FilterCoefs::makeLowShelf  (sampleRate, 800.0, 0.707, 1.0);
@@ -141,7 +146,8 @@ void AutotuneModule::reset()
     std::fill (analysisBuf.begin(), analysisBuf.end(), 0.0f);
     analysisWriteIdx = hopCounter = 0;
     smoothedCorrSt = 0.0f;
-    corrVoice.resetBuffers();
+    corrVoiceLive.resetBuffers();
+    corrVoiceStudio.resetBuffers();
     formantLowL.reset();  formantLowR.reset();
     formantHighL.reset(); formantHighR.reset();
     detectedHz.store (0.0f); targetHz.store (0.0f);
@@ -268,6 +274,19 @@ void AutotuneModule::process (juce::AudioBuffer<float>& buffer)
     // 0.15 semitones ≈ 15 cents — a musically meaningful threshold.
     float deadZoneSt = 0.15f * (1.0f - character);
 
+    // Latency mode: switch which grain voice is active. On a switch, reset
+    // the newly-active voice so it doesn't play back stale/silent buffer
+    // content — this trades a brief (one grain length) dip for avoiding a
+    // garbled splice.
+    int modeIdx = latencyModeParam ? (int) std::round (latencyModeParam->load()) : 1;
+    modeIdx = juce::jlimit (0, 1, modeIdx);
+    if (modeIdx != currentLatencyMode)
+    {
+        currentLatencyMode = modeIdx;
+        (currentLatencyMode == 0 ? corrVoiceLive : corrVoiceStudio).resetBuffers();
+    }
+    GrainVoice& activeVoice = (currentLatencyMode == 0) ? corrVoiceLive : corrVoiceStudio;
+
     for (int s = 0; s < numSamples; ++s)
     {
         float mono = 0.0f;
@@ -306,7 +325,7 @@ void AutotuneModule::process (juce::AudioBuffer<float>& buffer)
         float inL = numChannels >= 1 ? buffer.getSample(0, s) : 0.0f;
         float inR = numChannels >= 2 ? buffer.getSample(1, s) : inL;
         float corrL, corrR;
-        corrVoice.processSample (inL, inR, corrL, corrR, ratio);
+        activeVoice.processSample (inL, inR, corrL, corrR, ratio);
         float mix = mixParam ? mixParam->load() : 1.0f;
         if (numChannels >= 1) buffer.setSample(0, s, inL + (corrL - inL) * mix);
         if (numChannels >= 2) buffer.setSample(1, s, inR + (corrR - inR) * mix);

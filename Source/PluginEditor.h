@@ -29,7 +29,7 @@ public:
     static constexpr int kEQTabH      = 20;   // EQ 1 / EQ 2 tab selector
     static constexpr int kEQH         = 250;
     static constexpr int kEQControlsH = 80;
-    static constexpr int kAutoH       = 110;
+    static constexpr int kAutoH       = 132;
     static constexpr int kLeftColW    = 560;  // EQ + Autotune column (narrowed to make room for the module grid)
 
 private:

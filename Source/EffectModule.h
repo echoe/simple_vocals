@@ -39,6 +39,12 @@ public:
     /** Returns true when the module should be skipped (parameter = 0). */
     bool isBypassed() const noexcept { return enabledParam == nullptr || enabledParam->load() < 0.5f; }
 
+    /** Samples of unavoidable processing latency this module introduces
+        while active (e.g. a pitch-shifter's grain buffer). Most modules are
+        latency-free and can rely on the default. Should return 0 while the
+        module is bypassed, since a skipped module can't be delaying anything. */
+    virtual int getLatencySamples() const noexcept { return 0; }
+
 protected:
     juce::String moduleId;
     std::atomic<float>* enabledParam = nullptr;

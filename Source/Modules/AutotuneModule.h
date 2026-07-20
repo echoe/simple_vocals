@@ -31,6 +31,22 @@ public:
     float getCorrectionSt()const noexcept { return correctionSt.load(std::memory_order_relaxed); }
     float getConfidence()  const noexcept { return confidence.load  (std::memory_order_relaxed); }
 
+    // Latency mode: the granular pitch-shifter's grain size is the dominant
+    // source of this module's processing latency (its read head necessarily
+    // trails the write head by roughly one grain length). Live uses a short
+    // grain for near-real-time monitoring at some cost to smoothness; Studio
+    // uses the original, smoother, higher-latency grain. Latency is reported
+    // to the host via EffectModule::getLatencySamples() -> EffectChain ->
+    // AudioProcessor::setLatencySamples(), so the DAW can compensate.
+    static constexpr float kLiveGrainMs   = 10.0f;
+    static constexpr float kStudioGrainMs = 120.0f;
+
+    int getLatencySamples() const noexcept override
+    {
+        if (isBypassed()) return 0;
+        return currentLatencyMode == 0 ? corrVoiceLive.grainSize : corrVoiceStudio.grainSize;
+    }
+
 private:
     // ── Granular pitch-shift voice (same algorithm as HarmonizerModule) ──
     struct GrainVoice
@@ -64,7 +80,9 @@ private:
     std::atomic<float> correctionSt { 0.0f };
     std::atomic<float> confidence   { 0.0f };
 
-    GrainVoice corrVoice;
+    GrainVoice corrVoiceLive;      // short grain: low latency, monitoring-friendly
+    GrainVoice corrVoiceStudio;    // long grain: original smoothness/latency
+    int currentLatencyMode = 1;    // 0 = Live, 1 = Studio — mirrors auto_latency_mode's default
 
     // ── Parameters ────────────────────────────────────────────────────────
     std::atomic<float>* speedParam     = nullptr;
@@ -73,6 +91,7 @@ private:
     std::atomic<float>* keyParam       = nullptr;
     std::atomic<float>* formantParam   = nullptr;
     std::atomic<float>* characterParam = nullptr;   // 0=Natural, 1=Robotic
+    std::atomic<float>* latencyModeParam = nullptr; // 0=Live, 1=Studio
     std::array<std::atomic<float>*, 12> noteParams { nullptr };
 
     // Formant-shift: complementary shelf filters applied after pitch correction

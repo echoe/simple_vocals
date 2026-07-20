@@ -37,6 +37,15 @@ MODULES
    matching major/minor key from the sung pitch (Krumhansl-Schmuckler
    key-finding).
 
+   A Live / Studio toggle controls the pitch-shifter's grain size,
+   which is the source of this module's processing latency: Live uses
+   a short ~10ms grain for near-real-time monitoring (some loss of
+   smoothness); Studio uses the original ~120ms grain for the
+   smoothest correction. The plugin reports its total current latency
+   (this module plus the Harmonizer's, if both are active — see below)
+   to the host for automatic delay compensation, so tracks stay in
+   sync regardless of which modules or modes are active.
+
 3. De-Esser
    Frequency-targeted sibilance control with adjustable center
    frequency, threshold, and reduction range.
@@ -51,7 +60,15 @@ MODULES
 
 6. Harmonizer
    Two independently tunable harmony voices (in semitones), with mix,
-   grain size, humanize, and stereo width controls.
+   grain size, humanize, and stereo width controls. Like Autotune, this
+   is a granular pitch shifter, so the Grain (ms) knob (30-150ms,
+   default 80ms) is directly a latency control — a smaller grain
+   reacts faster but sounds a little grainier; a larger grain is
+   smoother but slower. Its current latency is reported to the host
+   for automatic delay compensation, same as Autotune. (The stereo-
+   width Haas delay is a separate, intentional per-channel effect and
+   isn't part of this — same reasoning as the Delay module's echoes
+   not being reported as latency.)
 
 7. Reverb
    Size, damping, width, pre-delay, mix, and a freeze mode for infinite

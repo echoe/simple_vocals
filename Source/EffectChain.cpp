@@ -69,6 +69,14 @@ void EffectChain::process (juce::AudioBuffer<float>& buffer)
     }
 }
 
+int EffectChain::getTotalLatencySamples() const
+{
+    int total = 0;
+    for (auto& m : modules)
+        total += m->getLatencySamples();
+    return total;
+}
+
 void EffectChain::reset()
 {
     for (auto& m : modules)

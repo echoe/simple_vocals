@@ -22,6 +22,20 @@ public:
     void reset() override;
     juce::String getDisplayName() const override { return "Harmonizer"; }
 
+    // Like Autotune, this is a granular pitch shifter: the read heads
+    // necessarily trail the write head by roughly one grain length, so the
+    // Grain (ms) knob is directly a latency control (30-150ms range, 80ms
+    // default). Reported to the host via getLatencySamples() -> EffectChain
+    // -> AudioProcessor::setLatencySamples() so the DAW can compensate.
+    // (The Haas stereo-width delay is a per-channel creative effect, not
+    // reported here — like the Delay module's echoes, it's not something a
+    // whole-plugin output delay could meaningfully "compensate" for.)
+    int getLatencySamples() const noexcept override
+    {
+        if (isBypassed()) return 0;
+        return voice1.grainSize;   // voice1 and voice2 always share the same grain size
+    }
+
 private:
     // ── Grain voice ───────────────────────────────────────────────────────
     struct GrainVoice
