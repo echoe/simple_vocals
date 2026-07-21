@@ -1,7 +1,7 @@
 SimpleVocals
 ============
 A JUCE-based vocal channel-strip plugin (VST3 / Standalone) for macOS and
-Linux, built around a reorderable chain of eight processing modules.
+Linux, built around a reorderable chain of eight processing modules. Made chiefly with an LLM and AI.
 
 
 OVERVIEW
