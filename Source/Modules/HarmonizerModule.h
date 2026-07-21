@@ -61,12 +61,12 @@ private:
         int   humTimer    = 0;     // samples until next target change
         juce::Random humRng;       // seeded differently per voice
 
-        void prepare (double sampleRate, float maxGrainMs, int rngSeed);
+        void prepare (double sr, float maxGrainMs, int rngSeed);
         void resetBuffers();
-        void setGrainSize (double sampleRate, float grainMs);
+        void setGrainSize (double sr, float grainMs);
 
         /** Pull humanisation toward a new random target. Call once per block. */
-        void updateHuman (float maxCents, double sampleRate, int numSamples);
+        void updateHuman (float maxCents, double sr, int numSamples);
 
         void processSample (float inL, float inR,
                             float& outL, float& outR, float ratio);
@@ -81,7 +81,7 @@ private:
         std::vector<float> buf;
         int writeIdx = 0, bufSize = 0;
 
-        void  prepare (double sampleRate);  // allocates for max 15 ms
+        void  prepare (double sr);  // allocates for max 15 ms
         void  reset();
         float tick (float input, int delaySamples);
     };

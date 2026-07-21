@@ -47,8 +47,11 @@ void ReverbPanel::resized()
     layoutKnobRow (row2, { { &predelayLabel, &predelaySlider },
                             { &mixLabel,      &mixSlider      } });
 
-    // Freeze button — centred vertically in its cell
-    freezeButton.setBounds (freezeCell.reduced (6, (freezeCell.getHeight() - 22) / 2));
+    // Freeze button — centred vertically in its cell. A smaller height here
+    // also shrinks the label text (LookAndFeel_V4 derives ToggleButton font
+    // size from button height), which is needed for "Freeze" to fit in this
+    // narrow a cell.
+    freezeButton.setBounds (freezeCell.reduced (3, (freezeCell.getHeight() - 16) / 2));
 }
 
 void ReverbPanel::paint (juce::Graphics& g)

@@ -8,6 +8,7 @@
 #include "UI/PresetBar.h"
 #include "UI/AutotuneComponent.h"
 #include "UI/DeEsserPanel.h"
+#include "UI/DenoiseBar.h"
 #include "UI/CompressorPanel.h"
 #include "UI/SaturationPanel.h"
 #include "UI/HarmonizerPanel.h"
@@ -30,11 +31,10 @@ public:
     static constexpr int kEQH         = 250;
     static constexpr int kEQControlsH = 80;
     static constexpr int kAutoH       = 132;
+    static constexpr int kDenoiseBarH = 64;   // slim strip under the module grid
     static constexpr int kLeftColW    = 560;  // EQ + Autotune column (narrowed to make room for the module grid)
 
 private:
-    SimpleVocalsAudioProcessor& audioProcessor;
-
     PresetBar         presetBar;
     AutoChainButton   autoChainButton;
     ChainStrip        chainStrip;
@@ -56,6 +56,7 @@ private:
     AutotuneComponent autotuneStrip;
 
     DeEsserPanel    deEsserPanel;
+    DenoiseBar      denoiseBar;
     CompressorPanel compressorPanel;
     DelayPanel      delayPanel;
     SaturationPanel saturationPanel;

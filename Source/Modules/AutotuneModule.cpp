@@ -133,8 +133,8 @@ void AutotuneModule::prepare (const juce::dsp::ProcessSpec& spec)
     corrVoiceStudio.prepare (sampleRate, kStudioGrainMs);
 
     juce::dsp::ProcessSpec mono { spec.sampleRate, spec.maximumBlockSize, 1 };
-    auto flat = FilterCoefs::makeLowShelf  (sampleRate, 800.0, 0.707, 1.0);
-    auto flat2= FilterCoefs::makeHighShelf (sampleRate, 800.0, 0.707, 1.0);
+    auto flat = FilterCoefs::makeLowShelf  (sampleRate, 800.0f, 0.707f, 1.0f);
+    auto flat2= FilterCoefs::makeHighShelf (sampleRate, 800.0f, 0.707f, 1.0f);
     formantLowL.coefficients  = flat;  formantLowR.coefficients  = flat;
     formantHighL.coefficients = flat2; formantHighR.coefficients = flat2;
     formantLowL.prepare (mono);  formantLowR.prepare (mono);
@@ -339,10 +339,10 @@ void AutotuneModule::process (juce::AudioBuffer<float>& buffer)
         // Positive formant → boost highs / cut lows  (brighter, "smaller" voice)
         // Negative formant → boost lows  / cut highs (darker,   "larger"  voice)
         float tiltDb   = formant * 2.0f;
-        auto  lowCoefs = FilterCoefs::makeLowShelf  (sampleRate, 800.0, 0.707,
-                             (double) juce::Decibels::decibelsToGain (-tiltDb));
-        auto  hiCoefs  = FilterCoefs::makeHighShelf (sampleRate, 800.0, 0.707,
-                             (double) juce::Decibels::decibelsToGain (+tiltDb));
+        auto  lowCoefs = FilterCoefs::makeLowShelf  (sampleRate, 800.0f, 0.707f,
+                             juce::Decibels::decibelsToGain (-tiltDb));
+        auto  hiCoefs  = FilterCoefs::makeHighShelf (sampleRate, 800.0f, 0.707f,
+                             juce::Decibels::decibelsToGain (+tiltDb));
 
         formantLowL.coefficients  = lowCoefs; formantLowR.coefficients  = lowCoefs;
         formantHighL.coefficients = hiCoefs;  formantHighR.coefficients = hiCoefs;

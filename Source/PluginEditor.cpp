@@ -2,7 +2,6 @@
 
 SimpleVocalsAudioProcessorEditor::SimpleVocalsAudioProcessorEditor (SimpleVocalsAudioProcessor& p)
     : AudioProcessorEditor (&p),
-      audioProcessor  (p),
       presetBar       (p.presetManager),
       autoChainButton (p, p.apvts, p.effectChain),
       chainStrip      (p.effectChain, p.apvts),
@@ -12,6 +11,7 @@ SimpleVocalsAudioProcessorEditor::SimpleVocalsAudioProcessorEditor (SimpleVocals
       eqControls2     (p.apvts, "eq2"),
       autotuneStrip   (p.apvts, p.effectChain.getModuleOfType<AutotuneModule>()),
       deEsserPanel    (p.apvts, p.effectChain.getModuleOfType<DeEsserModule>()),
+      denoiseBar      (p.apvts, p.effectChain.getModuleOfType<NoiseReductionModule>()),
       compressorPanel (p.apvts, p.effectChain.getModuleOfType<CompressorModule>()),
       delayPanel      (p.apvts),
       saturationPanel (p.apvts),
@@ -36,6 +36,7 @@ SimpleVocalsAudioProcessorEditor::SimpleVocalsAudioProcessorEditor (SimpleVocals
 
     addAndMakeVisible (autotuneStrip);
     addAndMakeVisible (deEsserPanel);
+    addAndMakeVisible (denoiseBar);
     addAndMakeVisible (compressorPanel);
     addAndMakeVisible (delayPanel);
     addAndMakeVisible (saturationPanel);
@@ -44,11 +45,11 @@ SimpleVocalsAudioProcessorEditor::SimpleVocalsAudioProcessorEditor (SimpleVocals
 
     selectEqTab (0);
 
-    constexpr int rightColW  = 620;   // 3 x 2 grid of module panels
-    constexpr int panelRowH  = 220;
+    constexpr int rightColW   = 620;   // 3 x 2 grid of module panels
+    constexpr int panelRowH   = 220;
 
     int leftColH  = kEQTabH + kEQH + kMargin + kEQControlsH + kMargin + kAutoH;
-    int rightColH = panelRowH * 2 + kMargin;
+    int rightColH = panelRowH * 2 + kMargin + kMargin + kDenoiseBarH;
     int bodyH     = std::max (leftColH, rightColH);
 
     int totalW = kMargin + kLeftColW + kMargin + rightColW + kMargin;
@@ -125,13 +126,17 @@ void SimpleVocalsAudioProcessorEditor::resized()
 
     autotuneStrip.setBounds (left.removeFromTop (kAutoH));
 
-    // Right column: 2 x 3 grid of module panels
+    // Right column: 3 x 2 grid of module panels, plus a slim Denoise bar underneath
     auto right = full;
 
     std::array<juce::Component*, 6> panels {
         &deEsserPanel, &compressorPanel, &delayPanel,
         &saturationPanel, &harmonizerPanel, &reverbPanel
     };
+
+    auto denoiseArea = right.removeFromBottom (kDenoiseBarH);
+    right.removeFromBottom (kMargin);
+    denoiseBar.setBounds (denoiseArea);
 
     int rowH = (right.getHeight() - kMargin) / 2;
     int colW = (right.getWidth()  - kMargin * 2) / 3;

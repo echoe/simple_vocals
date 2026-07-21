@@ -91,7 +91,7 @@ void SaturationModule::prepare (const juce::dsp::ProcessSpec& spec)
     oversampling->initProcessing (spec.maximumBlockSize);
 
     juce::dsp::ProcessSpec mono { spec.sampleRate, spec.maximumBlockSize, 1 };
-    auto flat = FilterCoefs::makeHighShelf (sampleRate, 4000.0, 0.707, 1.0f);
+    auto flat = FilterCoefs::makeHighShelf (sampleRate, 4000.0f, 0.707f, 1.0f);
     toneFilterL.coefficients = flat;
     toneFilterR.coefficients = flat;
     toneFilterL.prepare (mono);
@@ -142,7 +142,7 @@ void SaturationModule::process (juce::AudioBuffer<float>& buffer)
 
     // ── Post-saturation tone shelf (high shelf at 4 kHz) ─────────────────
     auto toneGain = juce::Decibels::decibelsToGain (tone);
-    auto toneCoefs = FilterCoefs::makeHighShelf (sampleRate, 4000.0, 0.707, (double) toneGain);
+    auto toneCoefs = FilterCoefs::makeHighShelf (sampleRate, 4000.0f, 0.707f, toneGain);
     toneFilterL.coefficients = toneCoefs;
     toneFilterR.coefficients = toneCoefs;
 

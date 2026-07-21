@@ -78,6 +78,32 @@ MODULES
    Time, feedback, mix, tone (damping filter), and a ping-pong stereo
    mode.
 
+9. Denoise
+   A slim control strip under the six module panels (Learn Noise
+   Profile button, Reduction and Sensitivity knobs) rather than a full
+   module panel, since that's all it needs. Classical spectral-
+   subtraction noise reduction: click "Learn Noise Profile" while only
+   room tone/hiss is playing (no vocal) — after about 1.5 seconds it
+   captures an average noise spectrum (clicking Learn also turns the
+   module on automatically, since it can't listen while bypassed).
+   From then on, frequency bins close to that learned noise level get
+   attenuated (Reduction knob controls how strongly), while bins
+   clearly above the noise floor — i.e. your voice — pass through
+   mostly untouched. Sensitivity scales the learned profile up or
+   down if you want it to catch quieter or louder noise than what it
+   originally measured. A spectral floor keeps any bin from being
+   fully muted, which avoids "musical noise" (random tonal blips) that
+   naive noise subtraction is prone to.
+
+   This is well-understood classical DSP (Boll-style spectral
+   subtraction), not a trained model — it works well on steady
+   background noise (hiss, hum, fans, AC, room tone) but won't do much
+   for non-stationary noise like passing traffic or someone talking in
+   the background. Off by default (needs a learned profile to be
+   useful, and — like Autotune and Harmonizer — it has its own real
+   processing latency reported to the host for delay compensation
+   while active).
+
 
 AUTO CHAIN
 ----------

@@ -28,8 +28,8 @@ void DeEsserModule::prepare (const juce::dsp::ProcessSpec& spec)
     sampleRate = spec.sampleRate;
     juce::dsp::ProcessSpec mono { spec.sampleRate, spec.maximumBlockSize, 1 };
 
-    auto lpCoefs = FilterCoefs::makeLowPass  (sampleRate, 6000.0, 0.707);
-    auto hpCoefs = FilterCoefs::makeHighPass (sampleRate, 6000.0, 0.707);
+    auto lpCoefs = FilterCoefs::makeLowPass  (sampleRate, 6000.0f, 0.707f);
+    auto hpCoefs = FilterCoefs::makeHighPass (sampleRate, 6000.0f, 0.707f);
 
     lpL.coefficients = lpCoefs;  lpR.coefficients = lpCoefs;
     hpL.coefficients = hpCoefs;  hpR.coefficients = hpCoefs;
@@ -49,8 +49,8 @@ void DeEsserModule::process (juce::AudioBuffer<float>& buffer)
     auto numSamples  = buffer.getNumSamples();
     auto numCh       = buffer.getNumChannels();
 
-    auto lpCoefs = FilterCoefs::makeLowPass  (sampleRate, (double) freq, 0.707);
-    auto hpCoefs = FilterCoefs::makeHighPass (sampleRate, (double) freq, 0.707);
+    auto lpCoefs = FilterCoefs::makeLowPass  (sampleRate, freq, 0.707f);
+    auto hpCoefs = FilterCoefs::makeHighPass (sampleRate, freq, 0.707f);
     lpL.coefficients = lpCoefs;  lpR.coefficients = lpCoefs;
     hpL.coefficients = hpCoefs;  hpR.coefficients = hpCoefs;
 

@@ -19,15 +19,15 @@ float HarmonizerModule::GrainVoice::dist (float rp) const
     return d;
 }
 
-void HarmonizerModule::GrainVoice::prepare (double sampleRate, float maxGrainMs, int rngSeed)
+void HarmonizerModule::GrainVoice::prepare (double sr, float maxGrainMs, int rngSeed)
 {
-    maxGrain  = (int)(sampleRate * maxGrainMs / 1000.0) + 1;
+    maxGrain  = (int)(sr * maxGrainMs / 1000.0) + 1;
     grainSize = maxGrain;
     bufSize   = maxGrain * 4;
     bufL.assign ((size_t)bufSize, 0.0f);
     bufR.assign ((size_t)bufSize, 0.0f);
     humRng.setSeed (rngSeed);
-    humTimer   = (int)(sampleRate * 0.5);
+    humTimer   = (int)(sr * 0.5);
     humTarget  = humSmoothed = 0.0f;
     resetBuffers();
 }
@@ -43,9 +43,9 @@ void HarmonizerModule::GrainVoice::resetBuffers()
     humSmoothed = humTarget = 0.0f;
 }
 
-void HarmonizerModule::GrainVoice::setGrainSize (double sampleRate, float grainMs)
+void HarmonizerModule::GrainVoice::setGrainSize (double sr, float grainMs)
 {
-    int newSize = juce::jlimit (1, maxGrain, (int)(sampleRate * grainMs / 1000.0));
+    int newSize = juce::jlimit (1, maxGrain, (int)(sr * grainMs / 1000.0));
     if (newSize != grainSize)
     {
         grainSize = newSize;
@@ -56,18 +56,18 @@ void HarmonizerModule::GrainVoice::setGrainSize (double sampleRate, float grainM
     }
 }
 
-void HarmonizerModule::GrainVoice::updateHuman (float maxCents, double sampleRate,
+void HarmonizerModule::GrainVoice::updateHuman (float maxCents, double sr,
                                                   int numSamples)
 {
     humTimer -= numSamples;
     if (humTimer <= 0)
     {
         // New random target every 0.3–1.5 s, each voice independent
-        humTimer  = (int)(sampleRate * (0.3 + humRng.nextDouble() * 1.2));
+        humTimer  = (int)(sr * (0.3 + humRng.nextDouble() * 1.2));
         humTarget = (float)(humRng.nextDouble() * 2.0 - 1.0) * maxCents;
     }
     // One-pole smooth toward target: τ ≈ 150 ms applied per block
-    float alpha = 1.0f - std::exp (-(float)numSamples / (float)(sampleRate * 0.15));
+    float alpha = 1.0f - std::exp (-(float)numSamples / (float)(sr * 0.15));
     humSmoothed += (humTarget - humSmoothed) * alpha;
 }
 
@@ -122,9 +122,9 @@ void HarmonizerModule::GrainVoice::processSample (float  inL, float  inR,
 
 // ──────────────────────────────────────────────── HaasDelay
 
-void HarmonizerModule::HaasDelay::prepare (double sampleRate)
+void HarmonizerModule::HaasDelay::prepare (double sr)
 {
-    bufSize = (int)(sampleRate * 0.015) + 2;  // 15 ms headroom
+    bufSize = (int)(sr * 0.015) + 2;  // 15 ms headroom
     buf.assign ((size_t)bufSize, 0.0f);
     writeIdx = 0;
 }

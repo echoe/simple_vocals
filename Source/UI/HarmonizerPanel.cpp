@@ -32,7 +32,7 @@ HarmonizerPanel::HarmonizerPanel (juce::AudioProcessorValueTreeState& apvts)
     makeKnob (int2Slider);      makeLabel (int2Label,      "Voice 2");
     makeKnob (mixSlider);       makeLabel (mixLabel,       "Mix");
     makeKnob (grainSlider);     makeLabel (grainLabel,     "Grain");
-    makeKnob (humaniseSlider);  makeLabel (humaniseLabel,  "Humanise");
+    makeKnob (humaniseSlider);  makeLabel (humaniseLabel,  "Human");
     makeKnob (widthSlider);     makeLabel (widthLabel,     "Width");
 
     for (auto* s : { &int1Slider, &int2Slider, &mixSlider, &grainSlider,

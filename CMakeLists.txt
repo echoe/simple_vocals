@@ -51,6 +51,7 @@ target_sources(SimpleVocals
         Source/UI/ChainStrip.cpp
         Source/UI/AutoChainButton.cpp
         Source/UI/DeEsserPanel.cpp
+        Source/UI/DenoiseBar.cpp
         Source/UI/CompressorPanel.cpp
         Source/UI/SaturationPanel.cpp
         Source/UI/ReverbPanel.cpp
@@ -58,6 +59,7 @@ target_sources(SimpleVocals
         Source/UI/AutotuneComponent.cpp
         Source/UI/DelayPanel.cpp
         Source/Modules/DelayModule.cpp
+        Source/Modules/NoiseReductionModule.cpp
         Source/Modules/EQModule.cpp
         Source/Modules/DeEsserModule.cpp
         Source/Modules/CompressorModule.cpp
