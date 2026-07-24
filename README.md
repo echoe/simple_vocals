@@ -3,8 +3,8 @@ SimpleVocals
 
 <img src=https://raw.githubusercontent.com/echoe/simple_vocals/refs/heads/main/simplevocals.png width="600" height="300" />
 
-## Human AI Area
-- Wow, I wrote this little part before the overview, and took the picture! Wow. Anyways, this is a plugin made with a lot of AI, providing a semi-opinionated, single-screen series of plugins that you can use in order to make your vocals sound better.
+## Human Area
+- Wow, I wrote this little part before the overview, and took the picture! Wow. Anyways, this is a plugin made mostly with an LLM, providing a semi-opinionated, single-screen series of plugins that you can use in order to make your vocals sound better. A human wrote this little part before the main readme.
 ## How to build
 - I always forget how to do this ... so it's back in the readme for now.
 ### Windows 
