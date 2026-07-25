@@ -1,13 +1,30 @@
 SimpleVocals
 ============
-A JUCE-based vocal channel-strip plugin (VST3 / Standalone) for macOS and
-Linux, built around a reorderable chain of eight processing modules.
+
+<img src=https://raw.githubusercontent.com/echoe/simple_vocals/refs/heads/main/simplevocals.png width="600" height="300" />
+
+## Human Area
+- Wow, I wrote this little part before the overview, and took the picture! Wow. Anyways, this is a plugin made mostly with an LLM, providing a semi-opinionated, single-screen series of plugins that you can use in order to make your vocals sound better. A human wrote this little part before the main readme.
+## How to build
+- I always forget how to do this ... so it's back in the readme for now.
+### Windows 
+- I installed CMake and Git from the respective websites (using the windows executables) and then installed Visual Studio Community Edition: "Desktop development with C++" workload, and then the build went without issues.
+### Linux
+- Just install development tools, CMAKE dependencies, and then a whole bundle of tools for JUCE ...
+- sudo dnf group install development-tools
+- sudo dnf install cmake gcc-c++ git alsa-lib-devel freetype-devel fontconfig-devel libX11-devel libXinerama-devel libXext-devel libXrandr-devel
+- sudo dnf install libXcursor-devel libXcomposite-devel gtk3-devel webkit2gtk4.1-devel freetype-devel curl-devel
+### MacOS
+- xcode-select --install (everything else is already there by default)
+
+This is a JUCE-based vocal channel-strip plugin (VST3 / Standalone) for macOS and Linux, built around a reorderable chain of ten (!) processing modules. Made chiefly with an LLM.
+The LLM readme is below.
 
 
 OVERVIEW
 --------
 SimpleVocals gives you a complete vocal processing chain in a single
-plugin: EQ, Autotune, De-Esser, Compressor, Saturation, Harmonizer,
+plugin: Denoise, EQ(x2), Autotune, De-Esser, Compressor, Saturation, Harmonizer,
 Reverb, and Delay. Every module can be individually enabled/disabled,
 and the order of the chain can be freely rearranged to suit your signal
 flow. A built-in preset browser ships with 50 factory presets covering
