@@ -43,14 +43,6 @@ void PresetManager::resetToDefaults()
 
 void PresetManager::buildFactoryPresets()
 {
-    factoryPresets.push_back ({ "Init",               [](PresetManager& m){ m.loadInit();              } });
-    factoryPresets.push_back ({ "Warm Vocal",          [](PresetManager& m){ m.loadWarmVocal();         } });
-    factoryPresets.push_back ({ "Pop Vocal",           [](PresetManager& m){ m.loadPopVocal();          } });
-    factoryPresets.push_back ({ "Dreamy Harmonies",   [](PresetManager& m){ m.loadDreamyHarmonies();   } });
-    factoryPresets.push_back ({ "Lo-Fi",               [](PresetManager& m){ m.loadLoFi();              } });
-
-    // Remaining presets are declarative (see extendedPresetTable) so the
-    // library can grow without a hand-written loader per preset.
     const auto& table = extendedPresetTable();
     for (int i = 0; i < (int) table.size(); ++i)
         factoryPresets.push_back ({ table[(size_t) i].name,
@@ -76,6 +68,48 @@ const std::vector<PresetManager::PresetData>& PresetManager::extendedPresetTable
 {
     static const std::vector<PresetData> table =
     {
+        // First five presets!
+        { "Init",
+          {},
+          { {"auto_enabled",0}, {"harm_enabled",0}, {"dly_enabled",0} }, 
+          -1, {} },
+
+        { "Warm Vocal",
+          { {"eq_band1_freq",300.0f}, {"eq_band1_gain",2.0f},
+            {"deess_freq",6500.0f}, {"deess_threshold",-22.0f}, {"deess_range",8.0f},
+            {"comp_threshold",-22.0f}, {"comp_ratio",2.5f}, {"comp_attack",12.0f}, {"comp_release",120.0f}, {"comp_makeup",2.0f},
+            {"sat_drive",2.5f}, {"sat_mix",0.25f},
+            {"verb_size",0.3f}, {"verb_damping",0.65f}, {"verb_mix",0.15f} },
+          { {"sat_mode",0}, {"auto_enabled",0}, {"harm_enabled",0}, {"dly_enabled",0} }, 
+          -1, {} },
+
+        { "Pop Vocal",
+          { {"eq_band2_freq",2500.0f}, {"eq_band2_gain",2.5f}, {"eq_band3_freq",8000.0f}, {"eq_band3_gain",2.0f},
+            {"auto_speed",0.05f}, {"auto_amount",1.0f},
+            {"deess_freq",7000.0f}, {"deess_threshold",-20.0f}, {"deess_range",10.0f},
+            {"comp_threshold",-20.0f}, {"comp_ratio",4.0f}, {"comp_attack",5.0f}, {"comp_release",60.0f}, {"comp_makeup",3.0f},
+            {"verb_size",0.5f}, {"verb_damping",0.4f}, {"verb_mix",0.18f}, {"verb_predelay",18.0f},
+            {"dly_time",125.0f}, {"dly_feedback",0.2f}, {"dly_mix",0.12f} },
+          { {"harm_enabled",0} }, 
+          0, {0,2,4,5,7,9,11} },
+
+        { "Dreamy Harmonies",
+          { {"comp_threshold",-18.0f}, {"comp_ratio",2.5f}, {"comp_makeup",1.5f},
+            {"sat_drive",2.0f}, {"sat_mix",0.2f},
+            {"harm_interval1",3.0f}, {"harm_interval2",7.0f}, {"harm_mix",0.45f}, {"harm_grain",90.0f},
+            {"verb_size",0.75f}, {"verb_damping",0.25f}, {"verb_width",1.0f}, {"verb_mix",0.3f},
+            {"dly_time",480.0f}, {"dly_feedback",0.4f}, {"dly_mix",0.18f} },
+          { {"sat_mode",0}, {"dly_pingpong",1}, {"auto_enabled",0}, {"deess_enabled",0} }, 
+          -1, {} },
+
+        { "Lo-Fi",
+          { {"eq_band0_freq",120.0f}, {"eq_band0_gain",-6.0f}, {"eq_band3_freq",8000.0f}, {"eq_band3_gain",-5.0f},
+            {"comp_threshold",-15.0f}, {"comp_ratio",6.0f}, {"comp_attack",2.0f}, {"comp_release",40.0f}, {"comp_makeup",4.0f},
+            {"sat_drive",5.0f}, {"sat_mix",0.55f}, {"sat_tone",-2.0f},
+            {"verb_size",0.28f}, {"verb_damping",0.8f}, {"verb_mix",0.1f},
+            {"dly_time",160.0f}, {"dly_feedback",0.45f}, {"dly_mix",0.25f}, {"dly_tone",1800.0f} },
+          { {"sat_mode",2}, {"auto_enabled",0}, {"harm_enabled",0} }, 
+          -1, {} },
         // ── Radio / broadcast / spoken word ─────────────────────────────
         { "Radio Ready",
           { {"eq_band0_freq",100.0f},{"eq_band0_gain",-3.0f},{"eq_band2_freq",3000.0f},{"eq_band2_gain",3.0f},
@@ -352,179 +386,6 @@ const std::vector<PresetManager::PresetData>& PresetManager::extendedPresetTable
           { {"auto_enabled",0},{"harm_enabled",0} }, -1, {} },
     };
     return table;
-}
-
-// ── Init ──────────────────────────────────────────────────────────────────
-
-void PresetManager::loadInit()
-{
-    resetToDefaults();
-    // Bypass the more transformative modules by default so the plugin is transparent
-    setIndex ("auto_enabled",  0);
-    setIndex ("harm_enabled",  0);
-    setIndex ("dly_enabled",   0);
-}
-
-// ── Warm Vocal ────────────────────────────────────────────────────────────
-
-void PresetManager::loadWarmVocal()
-{
-    resetToDefaults();
-
-    // Light EQ: small low-mid warmth boost
-    setParam ("eq_band1_freq", 300.0f);
-    setParam ("eq_band1_gain", 2.0f);
-
-    // De-esser: gentle
-    setParam ("deess_freq",      6500.0f);
-    setParam ("deess_threshold", -22.0f);
-    setParam ("deess_range",     8.0f);
-
-    // Compressor: gentle glue
-    setParam ("comp_threshold", -22.0f);
-    setParam ("comp_ratio",     2.5f);
-    setParam ("comp_attack",    12.0f);
-    setParam ("comp_release",   120.0f);
-    setParam ("comp_makeup",    2.0f);
-
-    // Tape saturation
-    setIndex ("sat_mode",  0);   // Tape
-    setParam ("sat_drive", 2.5f);
-    setParam ("sat_mix",   0.25f);
-
-    // Small room reverb
-    setParam ("verb_size",    0.3f);
-    setParam ("verb_damping", 0.65f);
-    setParam ("verb_mix",     0.15f);
-
-    // Bypass transformative modules
-    setIndex ("auto_enabled",  0);
-    setIndex ("harm_enabled",  0);
-    setIndex ("dly_enabled",   0);
-}
-
-// ── Pop Vocal ─────────────────────────────────────────────────────────────
-
-void PresetManager::loadPopVocal()
-{
-    resetToDefaults();
-
-    // EQ: slight high boost for presence
-    setParam ("eq_band2_freq", 2500.0f);
-    setParam ("eq_band2_gain", 2.5f);
-    setParam ("eq_band3_freq", 8000.0f);
-    setParam ("eq_band3_gain", 2.0f);
-
-    // Autotune: tight
-    setParam ("auto_speed",  0.05f);
-    setParam ("auto_amount", 1.0f);
-    setScale (0, {0,2,4,5,7,9,11});   // C Major
-
-    // De-esser
-    setParam ("deess_freq",      7000.0f);
-    setParam ("deess_threshold", -20.0f);
-    setParam ("deess_range",     10.0f);
-
-    // Compressor: punchy
-    setParam ("comp_threshold", -20.0f);
-    setParam ("comp_ratio",     4.0f);
-    setParam ("comp_attack",    5.0f);
-    setParam ("comp_release",   60.0f);
-    setParam ("comp_makeup",    3.0f);
-
-    // Plate reverb
-    setParam ("verb_size",     0.5f);
-    setParam ("verb_damping",  0.4f);
-    setParam ("verb_mix",      0.18f);
-    setParam ("verb_predelay", 18.0f);
-
-    // Eighth-note slapback
-    setParam ("dly_time",     125.0f);
-    setParam ("dly_feedback", 0.2f);
-    setParam ("dly_mix",      0.12f);
-
-    // Bypass harmonizer
-    setIndex ("harm_enabled", 0);
-}
-
-// ── Dreamy Harmonies ──────────────────────────────────────────────────────
-
-void PresetManager::loadDreamyHarmonies()
-{
-    resetToDefaults();
-
-    // Gentle compression
-    setParam ("comp_threshold", -18.0f);
-    setParam ("comp_ratio",     2.5f);
-    setParam ("comp_makeup",    1.5f);
-
-    // Tape warmth
-    setIndex ("sat_mode",  0);
-    setParam ("sat_drive", 2.0f);
-    setParam ("sat_mix",   0.2f);
-
-    // Harmonizer: minor third + fifth
-    setParam ("harm_interval1", 3.0f);   // minor 3rd
-    setParam ("harm_interval2", 7.0f);   // perfect 5th
-    setParam ("harm_mix",       0.45f);
-    setParam ("harm_grain",     90.0f);
-
-    // Lush long reverb
-    setParam ("verb_size",    0.75f);
-    setParam ("verb_damping", 0.25f);
-    setParam ("verb_width",   1.0f);
-    setParam ("verb_mix",     0.3f);
-
-    // Ping-pong delay
-    setParam ("dly_time",     480.0f);
-    setParam ("dly_feedback", 0.4f);
-    setParam ("dly_mix",      0.18f);
-    setIndex ("dly_pingpong", 1);
-
-    // Bypass autotune + de-esser
-    setIndex ("auto_enabled",  0);
-    setIndex ("deess_enabled", 0);
-}
-
-// ── Lo-Fi ─────────────────────────────────────────────────────────────────
-
-void PresetManager::loadLoFi()
-{
-    resetToDefaults();
-
-    // EQ: roll off highs and lows
-    setParam ("eq_band0_freq", 120.0f);
-    setParam ("eq_band0_gain", -6.0f);
-    setParam ("eq_band3_freq", 8000.0f);
-    setParam ("eq_band3_gain", -5.0f);
-
-    // Compression: heavy, fast
-    setParam ("comp_threshold", -15.0f);
-    setParam ("comp_ratio",     6.0f);
-    setParam ("comp_attack",    2.0f);
-    setParam ("comp_release",   40.0f);
-    setParam ("comp_makeup",    4.0f);
-
-    // Hard clip saturation
-    setIndex ("sat_mode",  2);   // Clip
-    setParam ("sat_drive", 5.0f);
-    setParam ("sat_mix",   0.55f);
-    setParam ("sat_tone",  -2.0f);
-
-    // Dark room reverb
-    setParam ("verb_size",    0.28f);
-    setParam ("verb_damping", 0.8f);
-    setParam ("verb_mix",     0.1f);
-
-    // Short slapback delay with dark repeats
-    setParam ("dly_time",     160.0f);
-    setParam ("dly_feedback", 0.45f);
-    setParam ("dly_mix",      0.25f);
-    setParam ("dly_tone",     1800.0f);
-
-    // Bypass autotune + harmonizer
-    setIndex ("auto_enabled", 0);
-    setIndex ("harm_enabled", 0);
 }
 
 // ──────────────────────────────────────────────────────── factory accessors

@@ -16,16 +16,6 @@ namespace
 
 EffectChain::EffectChain()
 {
-    // Default signal flow: Denoise -> EQ -> Autotune -> De-esser -> Compressor
-    // -> Saturation -> Harmonizer -> Reverb -> Delay -> EQ 2.
-    // Denoise goes first so noise reduction happens before anything else has
-    // a chance to add gain/coloration on top of the noise floor.
-    // EQ 2 is a second, independent parametric EQ instance (its own band
-    // parameters, prefixed "eq2_") that can be dragged to any position in the
-    // chain via the chain strip — e.g. one EQ before the compressor for
-    // corrective work, a second one after everything for tonal shaping.
-    // At its default band gains (0 dB) it's audibly transparent, so adding
-    // it doesn't change the sound of existing presets/projects.
     // Index in `modules` is each module's permanent identity; `order` is what the UI reorders.
     modules.push_back (std::make_unique<NoiseReductionModule>());
     modules.push_back (std::make_unique<EQModule>());
