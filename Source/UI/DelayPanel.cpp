@@ -27,27 +27,24 @@ void DelayPanel::resized()
 {
     auto content = contentArea();
 
-    content.removeFromTop (68);  // echo viz
+    content.removeFromTop (54);  // echo viz
     content.removeFromTop (4);
 
-    // Row 1: Time, Feedback
-    auto row1 = content.removeFromTop ((content.getHeight() - 4) / 2);
     content.removeFromTop (4);
-    layoutKnobRow (row1, { { &timeLabel,     &timeSlider     },
-                            { &feedbackLabel, &feedbackSlider } });
 
-    // Row 2: Mix knob · Tone knob · Ping-Pong toggle (inline like Freeze in Reverb)
-    auto row2 = content;
-    auto ppCell = row2.removeFromRight (row2.getWidth() / 3);
-    layoutKnobRow (row2, { { &mixLabel,  &mixSlider  },
-                            { &toneLabel, &toneSlider } });
-    pingPongButton.setBounds (ppCell.reduced (6, (ppCell.getHeight() - 22) / 2));
+    // Single row: Time, Feedback, Mix, Tone knobs + Ping-Pong toggle
+    auto ppCell = content.removeFromRight (content.getWidth() / 5);
+    layoutKnobRow (content, { { &timeLabel,     &timeSlider     },
+                               { &feedbackLabel, &feedbackSlider },
+                               { &mixLabel,      &mixSlider      },
+                               { &toneLabel,     &toneSlider     } });
+    pingPongButton.setBounds (ppCell.reduced (3, (ppCell.getHeight() - 16) / 2));
 }
 
 void DelayPanel::paint (juce::Graphics& g)
 {
     ModulePanel::paint (g);
-    auto vizArea = contentArea().removeFromTop (68).reduced (3, 4);
+    auto vizArea = contentArea().removeFromTop (54).reduced (3, 4);
     drawEchoViz (g, vizArea);
 }
 

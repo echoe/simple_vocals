@@ -33,23 +33,20 @@ void CompressorPanel::resized()
     auto content = contentArea();
 
     // Visual row: transfer curve on left, GR meter on right
-    auto vizRow   = content.removeFromTop (68);
+    auto vizRow   = content.removeFromTop (54);
     auto grArea   = vizRow.removeFromRight (22);
     auto curveArea = vizRow;
     (void) curveArea; (void) grArea; // used in paint()
 
     content.removeFromTop (4);
 
-    // Two rows of three knobs
-    auto row1 = content.removeFromTop (content.getHeight() / 2);
-    auto row2 = content;
-
-    layoutKnobRow (row1, { { &thresholdLabel, &thresholdSlider },
-                            { &ratioLabel,     &ratioSlider     },
-                            { &attackLabel,    &attackSlider    } });
-    layoutKnobRow (row2, { { &releaseLabel,   &releaseSlider   },
-                            { &kneeLabel,      &kneeSlider      },
-                            { &makeupLabel,    &makeupSlider    } });
+    // Single row of all six knobs
+    layoutKnobRow (content, { { &thresholdLabel, &thresholdSlider },
+                               { &ratioLabel,     &ratioSlider     },
+                               { &attackLabel,    &attackSlider    },
+                               { &releaseLabel,   &releaseSlider   },
+                               { &kneeLabel,      &kneeSlider      },
+                               { &makeupLabel,    &makeupSlider    } });
 }
 
 void CompressorPanel::paint (juce::Graphics& g)
@@ -57,7 +54,7 @@ void CompressorPanel::paint (juce::Graphics& g)
     ModulePanel::paint (g);
 
     auto content  = contentArea();
-    auto vizRow   = content.removeFromTop (68);
+    auto vizRow   = content.removeFromTop (54);
     auto grArea   = vizRow.removeFromRight (22).reduced (3, 6);
     auto curveArea = vizRow.reduced (3, 4);
 

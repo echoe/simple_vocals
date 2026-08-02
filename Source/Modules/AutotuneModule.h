@@ -10,7 +10,7 @@
       3. Quantise detected pitch to the nearest note in the chosen key/scale.
       4. Smooth correction amount with the Retune Speed envelope.
       5. Pitch-shift the full stereo buffer by the correction ratio using
-         a two-head Hann² granular shifter (same algorithm as Harmonizer).
+         a two-head Hann² granular shifter (same style of granular shifter used elsewhere, e.g. PitchFormantModule).
       6. Blend dry + corrected by the Amount parameter.
 
     Exposes detectedHz / targetHz / correctionSt atomics for the UI. */
@@ -48,7 +48,7 @@ public:
     }
 
 private:
-    // ── Granular pitch-shift voice (same algorithm as HarmonizerModule) ──
+    // ── Granular pitch-shift voice (same style of granular shifter used elsewhere, e.g. PitchFormantModule) ──
     struct GrainVoice
     {
         std::vector<float> bufL, bufR;

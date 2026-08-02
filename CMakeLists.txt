@@ -16,7 +16,7 @@ else()
     FetchContent_Declare(
         juce
         GIT_REPOSITORY https://github.com/juce-framework/JUCE.git
-        GIT_TAG        9.0.0
+        GIT_TAG        8.0.13
         GIT_SHALLOW    TRUE
     )
     FetchContent_MakeAvailable(juce)
@@ -51,20 +51,20 @@ target_sources(SimpleVocals
         Source/UI/ChainStrip.cpp
         Source/UI/AutoChainButton.cpp
         Source/UI/DeEsserPanel.cpp
-        Source/UI/DenoiseBar.cpp
+        Source/UI/DenoisePanel.cpp
+        Source/UI/PitchFormantPanel.cpp
         Source/UI/CompressorPanel.cpp
         Source/UI/SaturationPanel.cpp
         Source/UI/ReverbPanel.cpp
-        Source/UI/HarmonizerPanel.cpp
         Source/UI/AutotuneComponent.cpp
         Source/UI/DelayPanel.cpp
         Source/Modules/DelayModule.cpp
         Source/Modules/NoiseReductionModule.cpp
+        Source/Modules/PitchFormantModule.cpp
         Source/Modules/EQModule.cpp
         Source/Modules/DeEsserModule.cpp
         Source/Modules/CompressorModule.cpp
         Source/Modules/SaturationModule.cpp
-        Source/Modules/HarmonizerModule.cpp
         Source/Modules/ReverbModule.cpp
         Source/Modules/AutotuneModule.cpp
 )

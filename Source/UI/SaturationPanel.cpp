@@ -88,15 +88,14 @@ void SaturationPanel::resized()
 {
     auto content = contentArea();
 
-    content.removeFromTop (72);   // transfer curve — handled in paint()
+    content.removeFromTop (54);   // transfer curve — handled in paint()
     content.removeFromTop (4);
 
-    auto modeRow = content.removeFromTop (22);
-    modeLabel.setBounds (modeRow.removeFromLeft (48));
-    modeRow.removeFromLeft (4);
-    modeBox.setBounds (modeRow);
-
-    content.removeFromTop (5);
+    // Single row: Mode dropdown (self-descriptive — shows "Tape"/"Tube"/etc,
+    // so the separate "Mode" label isn't needed here) + the four knobs.
+    auto modeCell = content.removeFromLeft (66);
+    modeBox.setBounds (modeCell.withSizeKeepingCentre (66, 22));
+    content.removeFromLeft (4);
 
     layoutKnobRow (content, { { &driveLabel,  &driveSlider  },
                                { &toneLabel,   &toneSlider   },
@@ -110,7 +109,7 @@ void SaturationPanel::paint (juce::Graphics& g)
 {
     ModulePanel::paint (g);
 
-    auto curveArea = contentArea().removeFromTop (72).reduced (3, 4);
+    auto curveArea = contentArea().removeFromTop (54).reduced (3, 4);
     drawTransferCurve (g, curveArea);
 }
 

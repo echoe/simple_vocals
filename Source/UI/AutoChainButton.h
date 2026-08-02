@@ -11,9 +11,9 @@
     scaled to the measured dynamics, a de-esser scaled to measured
     sibilance, light saturation and reverb as "glue", and a neutral
     chromatic Autotune (pairs with the separate Auto Key button if a
-    specific key is wanted). Harmonizer, Delay, and EQ 2 are left off since
-    those are stylistic choices rather than corrective ones. Finally resets
-    the chain to its default processing order.
+    specific key is wanted). Delay, Pitch/Formant, and EQ 2 are left off
+    since those are stylistic choices rather than corrective ones. Finally
+    resets the chain to its default processing order.
 
     This is rule-based signal analysis, not a trained model — it's meant as
     a fast, sensible starting point to tweak from, not a finished mix. */

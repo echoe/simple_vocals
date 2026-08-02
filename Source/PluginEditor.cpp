@@ -10,13 +10,13 @@ SimpleVocalsAudioProcessorEditor::SimpleVocalsAudioProcessorEditor (SimpleVocals
       eqControls1     (p.apvts, "eq"),
       eqControls2     (p.apvts, "eq2"),
       autotuneStrip   (p.apvts, p.effectChain.getModuleOfType<AutotuneModule>()),
-      deEsserPanel    (p.apvts, p.effectChain.getModuleOfType<DeEsserModule>()),
-      denoiseBar      (p.apvts, p.effectChain.getModuleOfType<NoiseReductionModule>()),
-      compressorPanel (p.apvts, p.effectChain.getModuleOfType<CompressorModule>()),
-      delayPanel      (p.apvts),
-      saturationPanel (p.apvts),
-      harmonizerPanel (p.apvts),
-      reverbPanel     (p.apvts)
+      deEsserPanel      (p.apvts, p.effectChain.getModuleOfType<DeEsserModule>()),
+      compressorPanel   (p.apvts, p.effectChain.getModuleOfType<CompressorModule>()),
+      delayPanel        (p.apvts),
+      saturationPanel   (p.apvts),
+      reverbPanel       (p.apvts),
+      denoisePanel      (p.apvts, p.effectChain.getModuleOfType<NoiseReductionModule>()),
+      pitchFormantPanel (p.apvts)
 {
     addAndMakeVisible (presetBar);
     addAndMakeVisible (autoChainButton);
@@ -36,20 +36,19 @@ SimpleVocalsAudioProcessorEditor::SimpleVocalsAudioProcessorEditor (SimpleVocals
 
     addAndMakeVisible (autotuneStrip);
     addAndMakeVisible (deEsserPanel);
-    addAndMakeVisible (denoiseBar);
     addAndMakeVisible (compressorPanel);
     addAndMakeVisible (delayPanel);
     addAndMakeVisible (saturationPanel);
-    addAndMakeVisible (harmonizerPanel);
     addAndMakeVisible (reverbPanel);
+    addAndMakeVisible (denoisePanel);
+    addAndMakeVisible (pitchFormantPanel);
 
     selectEqTab (0);
 
-    constexpr int rightColW   = 620;   // 3 x 2 grid of module panels
-    constexpr int panelRowH   = 220;
+    constexpr int rightColW = 620;   // 2 x 3 grid of module panels
 
     int leftColH  = kEQTabH + kEQH + kMargin + kEQControlsH + kMargin + kAutoH;
-    int rightColH = panelRowH * 2 + kMargin + kMargin + kDenoiseBarH;
+    int rightColH = kFullRowH * 3 + kMargin * 2;
     int bodyH     = std::max (leftColH, rightColH);
 
     int totalW = kMargin + kLeftColW + kMargin + rightColW + kMargin;
@@ -126,32 +125,32 @@ void SimpleVocalsAudioProcessorEditor::resized()
 
     autotuneStrip.setBounds (left.removeFromTop (kAutoH));
 
-    // Right column: 3 x 2 grid of module panels, plus a slim Denoise bar underneath
+    // Right column: 2 x 3 grid. Row 3's right cell holds Denoise stacked
+    // on top of Pitch/Formant (each half height) instead of one full panel.
     auto right = full;
+    int  colW  = (right.getWidth() - kMargin) / 2;
 
-    std::array<juce::Component*, 6> panels {
-        &deEsserPanel, &compressorPanel, &delayPanel,
-        &saturationPanel, &harmonizerPanel, &reverbPanel
+    auto placeRow = [&] (juce::Rectangle<int> row, juce::Component& leftComp, juce::Component& rightComp)
+    {
+        auto cellL = row.removeFromLeft (colW);
+        row.removeFromLeft (kMargin);
+        leftComp.setBounds (cellL);
+        rightComp.setBounds (row);
     };
 
-    auto denoiseArea = right.removeFromBottom (kDenoiseBarH);
-    right.removeFromBottom (kMargin);
-    denoiseBar.setBounds (denoiseArea);
+    auto row0 = right.removeFromTop (kFullRowH);
+    right.removeFromTop (kMargin);
+    placeRow (row0, deEsserPanel, compressorPanel);
 
-    int rowH = (right.getHeight() - kMargin) / 2;
-    int colW = (right.getWidth()  - kMargin * 2) / 3;
-    int idx  = 0;
+    auto row1 = right.removeFromTop (kFullRowH);
+    right.removeFromTop (kMargin);
+    placeRow (row1, delayPanel, saturationPanel);
 
-    for (int row = 0; row < 2; ++row)
-    {
-        auto rowArea = right.removeFromTop (rowH);
-        if (row < 1) right.removeFromTop (kMargin);
-        for (int col = 0; col < 3; ++col)
-        {
-            if (idx >= (int) panels.size()) break;
-            auto cell = rowArea.removeFromLeft (colW);
-            if (col < 2) rowArea.removeFromLeft (kMargin);
-            panels[(size_t) idx++]->setBounds (cell);
-        }
-    }
+    auto row2 = right;   // remaining space — should equal kFullRowH
+    auto reverbCell = row2.removeFromLeft (colW);
+    row2.removeFromLeft (kMargin);
+    reverbPanel.setBounds (reverbCell);
+
+    denoisePanel.setBounds      (row2.removeFromTop (kHalfRowH));
+    pitchFormantPanel.setBounds (row2);
 }

@@ -25,7 +25,7 @@ void DeEsserPanel::resized()
     auto content = contentArea();
 
     // Top: visualisations (freq display left, GR meter right)
-    auto vizRow = content.removeFromTop (68);
+    auto vizRow = content.removeFromTop (54);
     auto grArea   = vizRow.removeFromRight (28);
     auto freqArea = vizRow;
     // Store for paint — layout in paint() so it redraws correctly
@@ -44,7 +44,7 @@ void DeEsserPanel::paint (juce::Graphics& g)
     ModulePanel::paint (g);
 
     auto content = contentArea();
-    auto vizRow  = content.removeFromTop (68);
+    auto vizRow  = content.removeFromTop (54);
     auto grArea  = vizRow.removeFromRight (28).reduced (4, 6);
     auto freqArea = vizRow.reduced (2, 4);
 

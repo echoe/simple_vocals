@@ -31,21 +31,18 @@ void ReverbPanel::resized()
 {
     auto content = contentArea();
 
-    content.removeFromTop (68);   // decay visual — handled in paint()
+    content.removeFromTop (54);   // decay visual — handled in paint()
     content.removeFromTop (4);
 
-    // Row 1: Size, Damping, Width
-    auto row1 = content.removeFromTop ((content.getHeight() - 4) / 2);
-    layoutKnobRow (row1, { { &sizeLabel,    &sizeSlider    },
-                            { &dampingLabel, &dampingSlider },
-                            { &widthLabel,   &widthSlider   } });
     content.removeFromTop (4);
 
-    // Row 2: Pre-delay knob · Mix knob · Freeze toggle
-    auto row2 = content;
-    auto freezeCell = row2.removeFromRight (row2.getWidth() / 3);
-    layoutKnobRow (row2, { { &predelayLabel, &predelaySlider },
-                            { &mixLabel,      &mixSlider      } });
+    // Single row: Size, Damping, Width, Pre-delay, Mix knobs + Freeze toggle
+    auto freezeCell = content.removeFromRight (content.getWidth() / 6);
+    layoutKnobRow (content, { { &sizeLabel,     &sizeSlider     },
+                               { &dampingLabel,  &dampingSlider  },
+                               { &widthLabel,    &widthSlider    },
+                               { &predelayLabel, &predelaySlider },
+                               { &mixLabel,      &mixSlider      } });
 
     // Freeze button — centred vertically in its cell. A smaller height here
     // also shrinks the label text (LookAndFeel_V4 derives ToggleButton font
@@ -58,7 +55,7 @@ void ReverbPanel::paint (juce::Graphics& g)
 {
     ModulePanel::paint (g);
 
-    auto vizArea = contentArea().removeFromTop (68).reduced (3, 4);
+    auto vizArea = contentArea().removeFromTop (54).reduced (3, 4);
     drawDecayTail (g, vizArea);
 }
 

@@ -8,20 +8,33 @@
 
     Workflow: point the plugin at a few seconds of room tone / hiss with no
     vocal (hit "Learn Noise Profile"), then it captures an average magnitude
-    spectrum of that noise. While active, every analysis frame's magnitude
-    spectrum is compared against that learned profile; frequency bins where
-    the incoming signal is close to the noise level get attenuated, bins
-    clearly above the noise floor (i.e. the vocal) pass through mostly
-    unaffected. A spectral floor prevents any bin from being fully muted,
+    spectrum of that noise — this profile never changes afterward.
+
+    Two modes control how that fixed profile gets used:
+    - Static (default): a fixed attenuation curve is computed once from the
+      profile — frequencies where the noise was more prominent get cut more,
+      applied identically to every frame regardless of what's currently
+      playing. Since the gain never depends on the current signal, pumping
+      is structurally impossible; it behaves like a learned EQ notch.
+    - Adaptive: each frame's magnitude spectrum is compared against the
+      profile live, so bins close to the noise level get attenuated while
+      bins clearly above it (the vocal) pass through mostly untouched. This
+      can reduce noise more where the vocal isn't masking it, but because
+      the gain reacts to the current signal, it's inherently more prone to
+      pumping even with the frame-to-frame smoothing below.
+
+    Either way, a spectral floor prevents any bin from being fully muted,
     which is what avoids the "musical noise" (random tonal blips) that a
-    naive full subtraction would produce.
+    naive full subtraction would produce, and Adaptive mode's per-bin gain
+    is smoothed across frames (fast attack, slower release) to soften
+    frame-to-frame jumps.
 
     This is classical DSP (Boll-style spectral subtraction via STFT
     overlap-add), not a trained model — a solid, well-understood technique
     for steady background noise (hiss, hum, fans, room tone), not a cure for
     non-stationary noise (traffic, talking, clatter).
 
-    Implementation note: like Autotune/Harmonizer, this module has genuine
+    Implementation note: like Autotune/Pitch-Formant, this module has genuine
     processing latency (reported via getLatencySamples()) — an STFT can't
     emit its first output sample until a full analysis window has been
     buffered. */
@@ -74,6 +87,8 @@ private:
 
         std::array<float, kNumBins> noiseProfile {};
         std::array<float, kNumBins> noiseAccum   {};
+        std::array<float, kNumBins> smoothedGain {};   // per-bin gain, smoothed across frames (Adaptive mode)
+        float noiseRefLevel   = 1.0f;   // max of noiseProfile — normalises Static mode's fixed curve
         int  noiseFrameCount  = 0;
         int  noiseFrameTarget = 0;
         bool learning    = false;
@@ -84,13 +99,14 @@ private:
         void startLearning (double sampleRate, float learnSeconds);
 
         /** Feed one input sample, get one (delayed) output sample back.
+            mode: 0 = Static, 1 = Adaptive (see class doc above).
             Sets justFinishedLearning = true on the sample where this
             channel's learning window completes. */
         float processSample (float inSample, float reductionAmt, float sensitivity,
-                              bool& justFinishedLearning);
+                              int mode, bool& justFinishedLearning);
 
     private:
-        void runFrame (float reductionAmt, float sensitivity, bool& justFinishedLearning);
+        void runFrame (float reductionAmt, float sensitivity, int mode, bool& justFinishedLearning);
     };
 
     std::array<STFTChannel, 2> channels;
@@ -102,4 +118,5 @@ private:
 
     std::atomic<float>* reductionParam   = nullptr;  // 0-100 %
     std::atomic<float>* sensitivityParam = nullptr;  // 0.5x - 3x, scales the learned profile before comparing
+    std::atomic<float>* modeParam        = nullptr;  // 0 = Static, 1 = Adaptive
 };

@@ -127,7 +127,6 @@ void AutoChainButton::finish()
     setParam ("verb_mix", 0.14f);
 
     // ── Left off: stylistic choices, not corrective ones ────────────────
-    setBool ("harm_enabled", false);
     setBool ("dly_enabled",  false);
     setBool ("eq2_enabled",  false);
 
