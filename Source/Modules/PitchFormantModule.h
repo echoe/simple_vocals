@@ -46,7 +46,14 @@ public:
     }
 
 private:
-    static constexpr float kGrainMs = 70.0f;   // fixed compromise between smoothness and latency
+    static constexpr float kGrainMs = 30.0f;   // fixed compromise between smoothness and latency
+    // Was 70ms. That's wide relative to a typical voice pitch period (~3-12ms
+    // for 80-300Hz), so grain boundaries landed mid-cycle of the source
+    // waveform and overlap-adding misaligned grains produced comb-filtering/
+    // phasiness. 30ms is still safely a few pitch periods for most voices
+    // but tightens that misalignment window considerably. Also shortens
+    // getLatencySamples() proportionally (roughly 3087 -> 1323 samples at
+    // 44.1kHz), which is a nice side benefit, not the primary motivation.
 
     /** Mono granular pitch shifter (4 overlapping taps at 25% spacing —
         raised-cosine-squared windows at that spacing sum to an exact

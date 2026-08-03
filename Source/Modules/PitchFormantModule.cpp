@@ -22,10 +22,28 @@ void PitchFormantModule::GrainVoice::resetBuffers()
 
 float PitchFormantModule::GrainVoice::readInterp (const std::vector<float>& b, float pos, int bsz)
 {
-    int i0 = (int) pos;
-    int i1 = (i0 + 1) % bsz;
-    float frac = pos - (float) i0;
-    return b[(size_t) i0] + (b[(size_t) i1] - b[(size_t) i0]) * frac;
+    // Catmull-Rom cubic Hermite interpolation (4-point, 3rd-order). Needs one
+    // sample on either side of the linear-interp pair used previously, so we
+    // pull i-1..i+2 with circular wraparound. Meaningfully less high-frequency
+    // smearing and aliasing than linear interp, especially as the read-head
+    // advance rate (ratio) moves further from 1.0 for larger pitch shifts.
+    int i1 = (int) pos;
+    int i0 = (i1 - 1 + bsz) % bsz;
+    int i2 = (i1 + 1) % bsz;
+    int i3 = (i1 + 2) % bsz;
+    float frac = pos - (float) i1;
+
+    float p0 = b[(size_t) i0];
+    float p1 = b[(size_t) i1];
+    float p2 = b[(size_t) i2];
+    float p3 = b[(size_t) i3];
+
+    float a0 = -0.5f * p0 + 1.5f * p1 - 1.5f * p2 + 0.5f * p3;
+    float a1 =  p0       - 2.5f * p1 + 2.0f * p2 - 0.5f * p3;
+    float a2 = -0.5f * p0            + 0.5f * p2;
+    float a3 =  p1;
+
+    return ((a0 * frac + a1) * frac + a2) * frac + a3;
 }
 
 float PitchFormantModule::GrainVoice::dist (float rp) const
