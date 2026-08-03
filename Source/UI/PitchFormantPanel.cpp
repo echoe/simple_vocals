@@ -22,7 +22,7 @@ PitchFormantPanel::PitchFormantPanel (juce::AudioProcessorValueTreeState& apvts)
 
 void PitchFormantPanel::resized()
 {
-    auto row = contentArea();
+    auto row = contentArea();   // use the full height, not a fixed 38px slice
 
     layoutKnobRow (row, { { &pitchLabel,   &pitchSlider   },
                            { &formantLabel, &formantSlider },

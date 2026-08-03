@@ -1,12 +1,22 @@
 #include "EQControlsStrip.h"
 
-void EQControlsStrip::setupSlider (juce::Slider& s)
+void EQControlsStrip::setupSlider (juce::Slider& s, juce::Colour thumbColour)
 {
-    s.setSliderStyle (juce::Slider::LinearBar);
-    s.setTextBoxStyle (juce::Slider::NoTextBox, false, 0, 0);
-    s.setColour (juce::Slider::trackColourId,    juce::Colour (0xff3a3a4a));
-    s.setColour (juce::Slider::thumbColourId,    juce::Colour (0xffb080f5));
+    s.setSliderStyle (juce::Slider::LinearHorizontal);
+    s.setTextBoxStyle (juce::Slider::TextBoxRight, false, 38, 16);
+    s.setColour (juce::Slider::trackColourId,      juce::Colour (0xff3a3a4a));
+    s.setColour (juce::Slider::thumbColourId,      thumbColour);
     s.setColour (juce::Slider::backgroundColourId, juce::Colour (0xff222230));
+    s.setColour (juce::Slider::textBoxTextColourId, juce::Colours::white.withAlpha (0.8f));
+    s.setColour (juce::Slider::textBoxOutlineColourId, juce::Colours::transparentBlack);
+}
+
+void EQControlsStrip::setupLabel (juce::Label& l, const juce::String& text)
+{
+    l.setText (text, juce::dontSendNotification);
+    l.setJustificationType (juce::Justification::centredLeft);
+    l.setFont (juce::Font (juce::FontOptions().withHeight (10.5f)));
+    l.setColour (juce::Label::textColourId, juce::Colours::white.withAlpha (0.55f));
 }
 
 EQControlsStrip::EQControlsStrip (juce::AudioProcessorValueTreeState& apvts, juce::String idPrefix)
@@ -22,22 +32,26 @@ EQControlsStrip::EQControlsStrip (juce::AudioProcessorValueTreeState& apvts, juc
             apvts, EQModule::bandParamID (idPrefix, i, "enabled"), band.enableToggle);
 
         // Q slider
-        setupSlider (band.qSlider);
+        setupSlider (band.qSlider, juce::Colour (0xffb080f5));
+        setupLabel  (band.qLabel, "Q");
         addAndMakeVisible (band.qSlider);
+        addAndMakeVisible (band.qLabel);
         band.qAtt = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
             apvts, EQModule::bandParamID (idPrefix, i, "q"), band.qSlider);
 
         // Threshold slider
-        setupSlider (band.threshSlider);
-        band.threshSlider.setColour (juce::Slider::thumbColourId, juce::Colour (0xffe07840));
+        setupSlider (band.threshSlider, juce::Colour (0xffe07840));
+        setupLabel  (band.threshLabel, "Thr");
         addAndMakeVisible (band.threshSlider);
+        addAndMakeVisible (band.threshLabel);
         band.threshAtt = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
             apvts, EQModule::bandParamID (idPrefix, i, "threshold"), band.threshSlider);
 
         // Ratio slider
-        setupSlider (band.ratioSlider);
-        band.ratioSlider.setColour (juce::Slider::thumbColourId, juce::Colour (0xff40b080));
+        setupSlider (band.ratioSlider, juce::Colour (0xff40b080));
+        setupLabel  (band.ratioLabel, "Rt");
         addAndMakeVisible (band.ratioSlider);
+        addAndMakeVisible (band.ratioLabel);
         band.ratioAtt = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (
             apvts, EQModule::bandParamID (idPrefix, i, "ratio"), band.ratioSlider);
     }
@@ -54,8 +68,8 @@ void EQControlsStrip::paint (juce::Graphics& g)
 
     float colW = (float) getWidth() / (float) EQModule::maxBands;
 
-    // Column headers and row labels
-    g.setFont (juce::Font (juce::FontOptions().withHeight (8.5f).withStyle ("Bold")));
+    // Column headers and separators
+    g.setFont (juce::Font (juce::FontOptions().withHeight (10.0f).withStyle ("Bold")));
 
     for (int i = 0; i < EQModule::maxBands; ++i)
     {
@@ -64,49 +78,41 @@ void EQControlsStrip::paint (juce::Graphics& g)
         // Column separator
         if (i > 0)
         {
-            g.setColour (juce::Colours::white.withAlpha (0.05f));
+            g.setColour (juce::Colours::white.withAlpha (0.06f));
             g.drawLine (cx, 4.0f, cx, (float) getHeight() - 4.0f, 0.5f);
         }
 
-        // Band number
-        g.setColour (juce::Colours::white.withAlpha (0.5f));
-        g.drawText ("B" + juce::String (i + 1), (int) cx + 2, 3, 22, 12,
+        // Band number — full "Band N" now that each column has the width for it
+        g.setColour (juce::Colours::white.withAlpha (0.55f));
+        g.drawText ("Band " + juce::String (i + 1), (int) cx + 6, 2, 70, 14,
                     juce::Justification::centredLeft);
-    }
-
-    // Row labels (painted once on the left of the first column's sliders)
-    constexpr int headerH = 18, sliderH = 16, gap = 4;
-    int y = headerH;
-    g.setFont (juce::Font (juce::FontOptions().withHeight (8.0f)));
-    for (auto* label : { "Q", "Thr", "Ratio" })
-    {
-        g.setColour (juce::Colours::white.withAlpha (0.35f));
-        g.drawText (label, 2, y, 28, sliderH, juce::Justification::centredLeft);
-        y += sliderH + gap;
     }
 }
 
 void EQControlsStrip::resized()
 {
-    constexpr int headerH = 18, sliderH = 16, gap = 4, labelW = 30;
+    constexpr int headerH = 16, sliderH = 18, gap = 3, labelW = 24;
     float colW = (float) getWidth() / (float) EQModule::maxBands;
 
     for (int i = 0; i < EQModule::maxBands; ++i)
     {
         auto& band = bands[(size_t) i];
         int   x    = (int) ((float) i * colW);
-        int   w    = (int) colW - 2;
+        int   w    = (int) colW - 4;
 
         // Enable toggle — right side of header, small square
-        band.enableToggle.setBounds (x + w - 16, 2, 16, 14);
+        band.enableToggle.setBounds (x + w - 16, 1, 16, 14);
 
-        // Sliders — full column width, but leave space for the label column on band 0
-        int sliderX = (i == 0) ? x + labelW : x + 2;
-        int sliderW = (i == 0) ? w - labelW : w - 2;
         int y = headerH;
+        auto layoutRow = [&] (juce::Label& lbl, juce::Slider& sld)
+        {
+            lbl.setBounds (x + 3, y, labelW, sliderH);
+            sld.setBounds (x + 3 + labelW, y, w - labelW - 3, sliderH);
+            y += sliderH + gap;
+        };
 
-        band.qSlider.setBounds    (sliderX, y, sliderW, sliderH); y += sliderH + gap;
-        band.threshSlider.setBounds (sliderX, y, sliderW, sliderH); y += sliderH + gap;
-        band.ratioSlider.setBounds  (sliderX, y, sliderW, sliderH);
+        layoutRow (band.qLabel,      band.qSlider);
+        layoutRow (band.threshLabel, band.threshSlider);
+        layoutRow (band.ratioLabel,  band.ratioSlider);
     }
 }

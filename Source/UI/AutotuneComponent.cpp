@@ -28,11 +28,13 @@ namespace
 
 void AutotuneComponent::makeCompactSlider (juce::Slider& s)
 {
-    s.setSliderStyle (juce::Slider::LinearBar);
-    s.setTextBoxStyle (juce::Slider::NoTextBox, false, 0, 0);
+    s.setSliderStyle (juce::Slider::LinearHorizontal);
+    s.setTextBoxStyle (juce::Slider::TextBoxRight, false, 34, 16);
     s.setColour (juce::Slider::trackColourId,      juce::Colour (0xff3a3a4a));
     s.setColour (juce::Slider::thumbColourId,      juce::Colour (0xff50c878));
     s.setColour (juce::Slider::backgroundColourId, juce::Colour (0xff1e1e28));
+    s.setColour (juce::Slider::textBoxTextColourId, juce::Colours::white.withAlpha (0.8f));
+    s.setColour (juce::Slider::textBoxOutlineColourId, juce::Colours::transparentBlack);
 }
 
 void AutotuneComponent::makeLabel (juce::Label& l, const juce::String& text)
@@ -174,8 +176,14 @@ void AutotuneComponent::timerCallback()
 void AutotuneComponent::resized()
 {
     auto b = getLocalBounds().reduced (4, 4);
+
+    // 1. Remove space for the sliders across the entire bottom first
+    auto sliders = b.removeFromBottom (40);
+    b.removeFromBottom (4); // gap above sliders
+
+    // 2. Split the remaining upper space between left display and right controls
     auto ctrl = b.removeFromRight (kCtrlW);
-    b.removeFromRight (6);
+    b.removeFromRight (6); // gap between display and ctrl
 
     // Row 1: Root label + combo + preset button + auto key-detect
     auto row1 = ctrl.removeFromTop (22);
@@ -194,24 +202,24 @@ void AutotuneComponent::resized()
     studioModeButton.setBounds (row1b.reduced (1, 0));
     ctrl.removeFromTop (4);
 
-    // Row 2: Piano keyboard
-    int keyH = ctrl.getHeight() - 4 - 24;
-    pianoRect = ctrl.removeFromTop (juce::jmax (44, keyH));
-    ctrl.removeFromTop (4);
+    // Row 2: Piano keyboard fills the remaining space in the control column
+    pianoRect = ctrl;
+    pianoRect.setHeight (juce::jmax (44, pianoRect.getHeight()));
 
-    // Row 3: 5 compact sliders
-    int cellW = ctrl.getWidth() / 5;
-    auto sliders = ctrl;
-    struct Pair { juce::Label* l; juce::Slider* s; };
-    for (auto& pr : { Pair{&speedLabel,     &speedSlider     },
-                      {    &amountLabel,    &amountSlider    },
-                      {    &mixLabel,       &mixSlider       },
-                      {    &formantLabel,   &formantSlider   },
-                      {    &characterLabel, &characterSlider } })
+    // Bottom Row: 5 sliders running the full width of the module
+    struct Pair { juce::Label& l; juce::Slider& s; };
+    int cellWBottom = sliders.getWidth() / 5;
+
+    for (auto& pr : { Pair{speedLabel, speedSlider},
+                      Pair{amountLabel, amountSlider},
+                      Pair{mixLabel, mixSlider},
+                      Pair{formantLabel, formantSlider},
+                      Pair{characterLabel, characterSlider} })
     {
-        auto cell = sliders.removeFromLeft (cellW).reduced (2, 0);
-        pr.l->setBounds (cell.removeFromTop (15));
-        pr.s->setBounds (cell);
+        auto cell = sliders.removeFromLeft (cellWBottom).reduced (4, 0);
+        // Fixed: Label gets the top 16 pixels of the cell, slider gets the rest
+        pr.l.setBounds (cell.removeFromTop (16));
+        pr.s.setBounds (cell);
     }
 }
 
@@ -379,15 +387,19 @@ void AutotuneComponent::paint (juce::Graphics& g)
     g.setColour (juce::Colour (0xff50c878).withAlpha (0.35f));
     g.drawRoundedRectangle (b.reduced (0.5f), 6.0f, 1.0f);
 
-    g.setFont (juce::Font (juce::FontOptions().withHeight (11.0f).withStyle ("Bold")));
+    g.setFont (juce::Font (juce::FontOptions().withHeight (14.0f).withStyle ("Bold")));
     g.setColour (juce::Colours::white.withAlpha (0.9f));
     g.drawText ("AUTOTUNE", getLocalBounds().removeFromTop (22).reduced (8, 0),
                 juce::Justification::centredLeft);
 
     // Pitch display (left of ctrl)
     auto displayArea = getLocalBounds().reduced (4, 4);
+
+    // We must manually account for the sliders being at the bottom now
+    displayArea.removeFromBottom (44); // 40 for sliders + 4 gap
     displayArea.removeFromRight (kCtrlW + 6);
     displayArea.removeFromTop (22);
+
     drawPitchDisplay (g, displayArea);
 
     // Piano keyboard

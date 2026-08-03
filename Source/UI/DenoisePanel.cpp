@@ -83,7 +83,7 @@ void DenoisePanel::timerCallback()
 
 void DenoisePanel::resized()
 {
-    auto row = contentArea();
+    auto row = contentArea();   // use the full height, not a fixed 38px slice
 
     learnButton.setBounds       (row.removeFromLeft (78).withSizeKeepingCentre (78, 22));
     row.removeFromLeft (3);

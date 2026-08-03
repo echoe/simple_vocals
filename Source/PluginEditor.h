@@ -28,10 +28,11 @@ public:
     static constexpr int kPresetBarH  = 30;
     static constexpr int kChainH      = 56;   // horizontal chain strip, top of window
     static constexpr int kEQTabH      = 20;   // EQ 1 / EQ 2 tab selector
-    static constexpr int kEQH         = 218;  // trimmed slightly so the EQ/Autotune column
-                                               // roughly matches the 2x3 module grid's height
+    static constexpr int kEQH         = 202;  // trimmed so the EQ/Autotune column
+                                               // exactly matches the module grid's height
     static constexpr int kEQControlsH = 80;
-    static constexpr int kAutoH       = 132;
+    static constexpr int kAutoH       = 120;  // reduced to eliminate margin between EQ and Autotune
+                                               // and allow two rows of sliders
     static constexpr int kLeftColW    = 560;  // EQ + Autotune column (narrowed to make room for the module grid)
 
     static constexpr int kFullRowH = 150;     // module panels with a visualiser

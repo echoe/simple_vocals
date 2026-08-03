@@ -13,7 +13,7 @@ public:
     explicit EQModule (juce::String idIn = "eq", juce::String displayNameIn = "EQ")
         : EffectModule (std::move (idIn)), displayName (std::move (displayNameIn)) {}
 
-    static constexpr int maxBands = 8;
+    static constexpr int maxBands = 4;
 
     void addParameters (juce::AudioProcessorValueTreeState::ParameterLayout& layout) override;
     void attachToState (juce::AudioProcessorValueTreeState& apvts) override;

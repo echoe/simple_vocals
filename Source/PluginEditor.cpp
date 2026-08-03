@@ -45,13 +45,12 @@ SimpleVocalsAudioProcessorEditor::SimpleVocalsAudioProcessorEditor (SimpleVocals
 
     selectEqTab (0);
 
-    constexpr int rightColW = 620;   // 2 x 3 grid of module panels
+    constexpr int rightColW = 620;   // 2 x 3 grid of module panels, no gaps between cells
 
-    int leftColH  = kEQTabH + kEQH + kMargin + kEQControlsH + kMargin + kAutoH;
-    int rightColH = kFullRowH * 3 + kMargin * 2;
-    int bodyH     = std::max (leftColH, rightColH);
+    // Force the body height to perfectly match the 3 right-side modules
+    int bodyH = kFullRowH * 3;
 
-    int totalW = kMargin + kLeftColW + kMargin + rightColW + kMargin;
+    int totalW = kMargin + kLeftColW + rightColW + kMargin;   // no gap between the two columns
     int totalH = kPresetBarH + kMargin + kChainH + kMargin + bodyH + kMargin;
 
     setSize (totalW, totalH);
@@ -104,51 +103,47 @@ void SimpleVocalsAudioProcessorEditor::resized()
     chainStrip.setBounds (full.removeFromTop (kChainH));
     full.removeFromTop (kMargin);
 
-    // Left column: EQ tabs + curve, EQ band controls, Autotune (narrowed)
+    // --- LEFT COLUMN ALIGNMENT FIX ---
     auto left = full.removeFromLeft (kLeftColW);
-    full.removeFromLeft (kMargin);
 
+    // 1. Give Autotune exactly the height of one right-side module at the bottom
+    autotuneStrip.setBounds (left.removeFromBottom (kFullRowH));
+
+    // 2. Lay out EQ Tabs from the top
     auto tabRow = left.removeFromTop (kEQTabH);
     int  tabW   = tabRow.getWidth() / 2;
     eq1TabButton.setBounds (tabRow.removeFromLeft (tabW).reduced (1));
     eq2TabButton.setBounds (tabRow.reduced (1));
 
-    auto eqArea = left.removeFromTop (kEQH);
-    eqCurve1.setBounds (eqArea);
-    eqCurve2.setBounds (eqArea);
-    left.removeFromTop (kMargin);
-
-    auto eqControlsArea = left.removeFromTop (kEQControlsH);
+    // 3. Lay out EQ Controls right above the Autotune
+    auto eqControlsArea = left.removeFromBottom (kEQControlsH);
     eqControls1.setBounds (eqControlsArea);
     eqControls2.setBounds (eqControlsArea);
-    left.removeFromTop (kMargin);
 
-    autotuneStrip.setBounds (left.removeFromTop (kAutoH));
+    // 4. The EQ Curve naturally fills whatever space is left, perfectly aligning it
+    eqCurve1.setBounds (left);
+    eqCurve2.setBounds (left);
 
-    // Right column: 2 x 3 grid. Row 3's right cell holds Denoise stacked
-    // on top of Pitch/Formant (each half height) instead of one full panel.
+
+    // --- RIGHT COLUMN ---
     auto right = full;
-    int  colW  = (right.getWidth() - kMargin) / 2;
+    int  colW  = right.getWidth() / 2;
 
     auto placeRow = [&] (juce::Rectangle<int> row, juce::Component& leftComp, juce::Component& rightComp)
     {
         auto cellL = row.removeFromLeft (colW);
-        row.removeFromLeft (kMargin);
         leftComp.setBounds (cellL);
         rightComp.setBounds (row);
     };
 
     auto row0 = right.removeFromTop (kFullRowH);
-    right.removeFromTop (kMargin);
     placeRow (row0, deEsserPanel, compressorPanel);
 
     auto row1 = right.removeFromTop (kFullRowH);
-    right.removeFromTop (kMargin);
     placeRow (row1, delayPanel, saturationPanel);
 
     auto row2 = right;   // remaining space — should equal kFullRowH
     auto reverbCell = row2.removeFromLeft (colW);
-    row2.removeFromLeft (kMargin);
     reverbPanel.setBounds (reverbCell);
 
     denoisePanel.setBounds      (row2.removeFromTop (kHalfRowH));

@@ -4,13 +4,13 @@ namespace
 {
     // Default frequencies spread across the vocal range
     constexpr float defaultFreqs[EQModule::maxBands] = {
-        80.0f, 250.0f, 800.0f, 3000.0f, 6000.0f, 10000.0f, 14000.0f, 18000.0f
+        80.0f, 250.0f, 800.0f, 3000.0f
     };
     constexpr float defaultQs[EQModule::maxBands] = {
-        0.8f, 1.0f, 1.0f, 1.0f, 1.0f, 0.8f, 0.7f, 0.7f
+        0.8f, 1.0f, 1.0f, 1.0f
     };
     constexpr bool defaultEnabled[EQModule::maxBands] = {
-        true, true, true, true, false, false, false, false
+        true, true, true, true
     };
 }
 
