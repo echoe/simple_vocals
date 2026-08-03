@@ -11,33 +11,19 @@
     spectrum of that noise — this profile never changes afterward.
 
     Two modes control how that fixed profile gets used:
-    - Static (default): a fixed attenuation curve is computed once from the
-      profile — frequencies where the noise was more prominent get cut more,
-      applied identically to every frame regardless of what's currently
-      playing. Since the gain never depends on the current signal, pumping
-      is structurally impossible; it behaves like a learned EQ notch.
+    - Static (default): a fixed attenuation curve is computed once;
+      behaves like a learned EQ notch.
     - Adaptive: each frame's magnitude spectrum is compared against the
       profile live, so bins close to the noise level get attenuated while
-      bins clearly above it (the vocal) pass through mostly untouched. This
-      can reduce noise more where the vocal isn't masking it, but because
-      the gain reacts to the current signal, it's inherently more prone to
-      pumping even with the frame-to-frame smoothing below.
+      bins clearly above it (the vocal) pass through mostly untouched.
 
     Either way, a spectral floor prevents any bin from being fully muted,
     which is what avoids the "musical noise" (random tonal blips) that a
     naive full subtraction would produce, and Adaptive mode's per-bin gain
     is smoothed across frames (fast attack, slower release) to soften
     frame-to-frame jumps.
-
-    This is classical DSP (Boll-style spectral subtraction via STFT
-    overlap-add), not a trained model — a solid, well-understood technique
-    for steady background noise (hiss, hum, fans, room tone), not a cure for
-    non-stationary noise (traffic, talking, clatter).
-
-    Implementation note: like Autotune/Pitch-Formant, this module has genuine
-    processing latency (reported via getLatencySamples()) — an STFT can't
-    emit its first output sample until a full analysis window has been
-    buffered. */
+    This is Boll-style spectral subtraction via STFT overlap-add.
+    This module has processing latency (reported via getLatencySamples()). */
 class NoiseReductionModule : public EffectModule
 {
 public:

@@ -62,13 +62,6 @@ private:
     std::vector<FactoryPreset> factoryPresets;
     void buildFactoryPresets();
 
-    // Factory loaders (defined in PresetManager.cpp)
-    void loadInit();
-    void loadWarmVocal();
-    void loadPopVocal();
-    void loadDreamyHarmonies();
-    void loadLoFi();
-
     // ── Data-driven factory presets ────────────────────────────────────────
     // A compact declarative format used for the extended preset library
     // (presets beyond the five hand-written loaders above). Keeps the
