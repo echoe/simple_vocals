@@ -3,30 +3,11 @@
 #include <juce_dsp/juce_dsp.h>
 #include "../EffectModule.h"
 
-/** Fixed pitch shift with independent formant tilt and dry/wet mix — this
-    is NOT pitch correction. Unlike Autotune, it never detects your pitch or
-    tries to snap it toward a scale; it just transposes the whole signal by
-    a fixed number of semitones you dial in, with an independent Formant
-    control so the transposed voice doesn't automatically sound like a
-    chipmunk (shifted up) or a giant (shifted down).
-
-    Uses a 4-tap overlap-add granular pitch shifter (the highest-quality
-    pitch-shift engine in this plugin), so expect
-    similar artifact behaviour: clean for modest shifts (a few semitones),
-    progressively more audible grain/flutter at larger ones. Like every
-    other pitch-shifting module here, it has real processing latency
-    (reported via getLatencySamples()) — and because that latency means the
-    wet signal is time-shifted relative to a naive "current sample" dry
-    signal, the dry reference used for the Mix knob is pulled from the same
-    delay line the shifter reads from (see GrainVoice::processSample) so
-    dry and wet stay phase-aligned instead of comb-filtering when blended.
+/** Fixed pitch shift with independent formant tilt and dry/wet mix
+    Uses a 4-tap overlap-add granular pitch shifter.
 
     Formant here is a spectral tilt (a low/high shelf pair around 800 Hz) —
-    the same lightweight approximation Autotune's Formant knob uses, not a
-    true LPC-based formant-preserving algorithm. It's a solid, low-artifact
-    way to warm up or thin out a shifted voice, but it won't perfectly hold
-    exact vowel character the way dedicated formant-correction software
-    does — worth knowing going in. */
+    the same lightweight approximation Autotune's Formant knob uses */
 class PitchFormantModule : public EffectModule
 {
 public:
@@ -47,14 +28,6 @@ public:
 
 private:
     static constexpr float kGrainMs = 30.0f;   // fixed compromise between smoothness and latency
-    // Was 70ms. That's wide relative to a typical voice pitch period (~3-12ms
-    // for 80-300Hz), so grain boundaries landed mid-cycle of the source
-    // waveform and overlap-adding misaligned grains produced comb-filtering/
-    // phasiness. 30ms is still safely a few pitch periods for most voices
-    // but tightens that misalignment window considerably. Also shortens
-    // getLatencySamples() proportionally (roughly 3087 -> 1323 samples at
-    // 44.1kHz), which is a nice side benefit, not the primary motivation.
-
     /** Mono granular pitch shifter (4 overlapping taps at 25% spacing —
         raised-cosine-squared windows at that spacing sum to an exact
         constant, hence the 0.5 normalisation factor in the .cpp). */

@@ -258,11 +258,7 @@ void AutotuneModule::process (juce::AudioBuffer<float>& buffer)
     auto numChannels = buffer.getNumChannels();
 
     // Character=0 (Natural): Speed param controls retune fully, up to ~500 ms.
-    // Character=1 (Hard Tune): pitch snaps instantly, sample-to-sample, with
-    // zero glide between notes — no exponential smoothing at all. This is
-    // the classic "T-Pain" hard-autotune behaviour: every note is corrected
-    // the instant it's detected, producing audible discrete pitch steps
-    // instead of a slide between notes.
+    // Character=1 (Hard Tune): pitch snaps instantly, sample-to-sample
     bool  hardSnap    = character >= 0.995f;
     float retuneSecs  = (0.001f + speed * 0.499f) * (1.0f - character * 0.99f);
     retuneSecs = juce::jmax (0.001f, retuneSecs);
@@ -276,8 +272,6 @@ void AutotuneModule::process (juce::AudioBuffer<float>& buffer)
 
     // Latency mode: switch which grain voice is active. On a switch, reset
     // the newly-active voice so it doesn't play back stale/silent buffer
-    // content — this trades a brief (one grain length) dip for avoiding a
-    // garbled splice.
     int modeIdx = latencyModeParam ? (int) std::round (latencyModeParam->load()) : 1;
     modeIdx = juce::jlimit (0, 1, modeIdx);
     if (modeIdx != currentLatencyMode)
