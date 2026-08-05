@@ -26,7 +26,7 @@ juce_add_plugin(SimpleVocals
     COMPANY_NAME "echoe"
     PLUGIN_MANUFACTURER_CODE Echo
     PLUGIN_CODE Svcl
-    FORMATS VST3 Standalone
+    FORMATS AU VST3 Standalone
     PRODUCT_NAME "SimpleVocals"
     VST3_CATEGORIES Fx
     IS_SYNTH FALSE
