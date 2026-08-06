@@ -15,7 +15,9 @@ SimpleVocals
 - sudo dnf install cmake gcc-c++ git alsa-lib-devel freetype-devel fontconfig-devel libX11-devel libXinerama-devel libXext-devel libXrandr-devel
 - sudo dnf install libXcursor-devel libXcomposite-devel gtk3-devel webkit2gtk4.1-devel freetype-devel curl-devel
 ### MacOS
-- xcode-select --install (everything else is already there by default)
+- xcode-select --install
+- brew install cmake
+- (everything else is already there by default)
 
 This is a JUCE-based vocal channel-strip plugin (VST3 / Standalone) for macOS and Linux, built around a reorderable chain of ten (!) processing modules. Made chiefly with an LLM.
 The LLM readme is below.
